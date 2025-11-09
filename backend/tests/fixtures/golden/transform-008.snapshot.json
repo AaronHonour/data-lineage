@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "CASE WHEN age >= 18 THEN 'Adult' ELSE 'Minor' END AS age_category",
+      "sources": [],
+      "target": "result.age_category"
+    }
+  ],
+  "total_lineages": 1
+}

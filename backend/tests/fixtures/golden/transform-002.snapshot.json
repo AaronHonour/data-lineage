@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) AS full_name",
+      "sources": [],
+      "target": "result.full_name"
+    }
+  ],
+  "total_lineages": 1
+}

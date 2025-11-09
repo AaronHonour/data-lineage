@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "quantity * unit_price AS line_total",
+      "sources": [],
+      "target": "result.line_total"
+    }
+  ],
+  "total_lineages": 1
+}

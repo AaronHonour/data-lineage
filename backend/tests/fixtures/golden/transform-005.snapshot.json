@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "CAST(customer_id AS VARCHAR) AS customer_id_str",
+      "sources": [],
+      "target": "result.customer_id_str"
+    }
+  ],
+  "total_lineages": 1
+}

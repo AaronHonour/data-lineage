@@ -1,0 +1,329 @@
+[
+  {
+    "test_id": "basic-001",
+    "name": "Simple column projection",
+    "description": "SELECT specific columns without any transformations",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["select_columns", "basic", "projection"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER", "primary_key": true},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-002",
+    "name": "SELECT all columns (SELECT *)",
+    "description": "SELECT * should track all columns from source table",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["select_star", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT * FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "first_name", "type": "VARCHAR"},
+          {"name": "last_name", "type": "VARCHAR"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.first_name",
+        "sources": ["customers.first_name"]
+      },
+      {
+        "target": "result.last_name",
+        "sources": ["customers.last_name"]
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 0.95,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-003",
+    "name": "Column with simple alias",
+    "description": "Column renamed using AS keyword",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["column_alias", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id AS id, email AS contact_email FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.contact_email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-004",
+    "name": "Column alias without AS keyword",
+    "description": "Implicit column aliasing (no AS keyword)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["column_alias", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id id, email contact_email FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.contact_email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-005",
+    "name": "Table alias in query",
+    "description": "Using table alias (FROM customers c)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["basic", "table_alias"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email FROM customers c",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-006",
+    "name": "SELECT with WHERE clause",
+    "description": "WHERE clause doesn't affect lineage (filtering only)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["where_clause", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE customer_id > 100",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-007",
+    "name": "SELECT DISTINCT",
+    "description": "DISTINCT doesn't affect lineage (deduplication only)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["distinct", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT DISTINCT email FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-008",
+    "name": "SELECT with ORDER BY",
+    "description": "ORDER BY doesn't affect lineage (sorting only)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["order_by", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers ORDER BY customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-009",
+    "name": "SELECT with LIMIT",
+    "description": "LIMIT doesn't affect lineage (row limiting only)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["limit", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers LIMIT 10",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"]
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"]
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 1000
+  },
+  {
+    "test_id": "basic-010",
+    "name": "Multiple columns from same table",
+    "description": "Selecting many columns to test performance",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["basic", "performance"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, first_name, last_name, email, phone, address, city, state, zip_code, country FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "first_name", "type": "VARCHAR"},
+          {"name": "last_name", "type": "VARCHAR"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "phone", "type": "VARCHAR"},
+          {"name": "address", "type": "VARCHAR"},
+          {"name": "city", "type": "VARCHAR"},
+          {"name": "state", "type": "VARCHAR"},
+          {"name": "zip_code", "type": "VARCHAR"},
+          {"name": "country", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {"target": "result.customer_id", "sources": ["customers.customer_id"]},
+      {"target": "result.first_name", "sources": ["customers.first_name"]},
+      {"target": "result.last_name", "sources": ["customers.last_name"]},
+      {"target": "result.email", "sources": ["customers.email"]},
+      {"target": "result.phone", "sources": ["customers.phone"]},
+      {"target": "result.address", "sources": ["customers.address"]},
+      {"target": "result.city", "sources": ["customers.city"]},
+      {"target": "result.state", "sources": ["customers.state"]},
+      {"target": "result.zip_code", "sources": ["customers.zip_code"]},
+      {"target": "result.country", "sources": ["customers.country"]}
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  }
+]

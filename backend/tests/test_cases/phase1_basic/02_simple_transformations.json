@@ -1,0 +1,300 @@
+[
+  {
+    "test_id": "transform-001",
+    "name": "String concatenation with || operator",
+    "description": "Concatenate two columns into one using PostgreSQL || operator",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["concat", "transformations", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT first_name || ' ' || last_name AS full_name FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "first_name", "type": "VARCHAR"},
+          {"name": "last_name", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.full_name",
+        "sources": ["customers.first_name", "customers.last_name"],
+        "expression": "first_name || ' ' || last_name",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "transform-002",
+    "name": "CONCAT function",
+    "description": "Use CONCAT function to combine columns",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["concat", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "first_name", "type": "VARCHAR"},
+          {"name": "last_name", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.full_name",
+        "sources": ["customers.first_name", "customers.last_name"],
+        "expression": "CONCAT(first_name, ' ', last_name)",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "transform-003",
+    "name": "Simple arithmetic - addition",
+    "description": "Add two numeric columns",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["arithmetic", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT price + tax AS total_price FROM products",
+    "source_tables": [
+      {
+        "name": "products",
+        "columns": [
+          {"name": "price", "type": "DECIMAL"},
+          {"name": "tax", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.total_price",
+        "sources": ["products.price", "products.tax"],
+        "expression": "price + tax",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 1500
+  },
+  {
+    "test_id": "transform-004",
+    "name": "Arithmetic - multiplication",
+    "description": "Multiply two columns (quantity * unit_price)",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["arithmetic", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT quantity * unit_price AS line_total FROM order_items",
+    "source_tables": [
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "quantity", "type": "INTEGER"},
+          {"name": "unit_price", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.line_total",
+        "sources": ["order_items.quantity", "order_items.unit_price"],
+        "expression": "quantity * unit_price",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 1500
+  },
+  {
+    "test_id": "transform-005",
+    "name": "CAST to different type",
+    "description": "Type casting using CAST function",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["cast", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT CAST(customer_id AS VARCHAR) AS customer_id_str FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id_str",
+        "sources": ["customers.customer_id"],
+        "expression": "CAST(customer_id AS VARCHAR)",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 1500
+  },
+  {
+    "test_id": "transform-006",
+    "name": "PostgreSQL :: type cast operator",
+    "description": "Type casting using PostgreSQL :: operator",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["cast", "transformations", "postgres"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id::VARCHAR AS customer_id_str FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id_str",
+        "sources": ["customers.customer_id"],
+        "expression": "customer_id::VARCHAR",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 1500
+  },
+  {
+    "test_id": "transform-007",
+    "name": "COALESCE function",
+    "description": "Handle NULL values with COALESCE",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["coalesce", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT COALESCE(middle_name, '') AS middle_name_safe FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "middle_name", "type": "VARCHAR", "nullable": true}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.middle_name_safe",
+        "sources": ["customers.middle_name"],
+        "expression": "COALESCE(middle_name, '')",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.85,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "transform-008",
+    "name": "Simple CASE statement",
+    "description": "Use CASE WHEN for conditional logic",
+    "difficulty": "intermediate",
+    "phase": 1,
+    "tags": ["case_statement", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT CASE WHEN age >= 18 THEN 'Adult' ELSE 'Minor' END AS age_category FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "age", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.age_category",
+        "sources": ["customers.age"],
+        "expression": "CASE WHEN age >= 18 THEN 'Adult' ELSE 'Minor' END",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 2500
+  },
+  {
+    "test_id": "transform-009",
+    "name": "UPPER function",
+    "description": "Transform string to uppercase",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["string_functions", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT UPPER(email) AS email_upper FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.email_upper",
+        "sources": ["customers.email"],
+        "expression": "UPPER(email)",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 1500
+  },
+  {
+    "test_id": "transform-010",
+    "name": "Multiple transformations in same query",
+    "description": "Mix of projection and transformation columns",
+    "difficulty": "basic",
+    "phase": 1,
+    "tags": ["transformations", "basic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, first_name || ' ' || last_name AS full_name, UPPER(email) AS email_upper FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "first_name", "type": "VARCHAR"},
+          {"name": "last_name", "type": "VARCHAR"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.full_name",
+        "sources": ["customers.first_name", "customers.last_name"],
+        "expression": "first_name || ' ' || last_name",
+        "transformation_type": "transformation"
+      },
+      {
+        "target": "result.email_upper",
+        "sources": ["customers.email"],
+        "expression": "UPPER(email)",
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.85,
+    "max_parse_time_ms": 3000
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "COALESCE(middle_name, '') AS middle_name_safe",
+      "sources": [],
+      "target": "result.middle_name_safe"
+    }
+  ],
+  "total_lineages": 1
+}

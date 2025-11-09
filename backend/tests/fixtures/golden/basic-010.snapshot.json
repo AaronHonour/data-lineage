@@ -1,0 +1,56 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "first_name",
+      "sources": [],
+      "target": "result.first_name"
+    },
+    {
+      "expression": "last_name",
+      "sources": [],
+      "target": "result.last_name"
+    },
+    {
+      "expression": "email",
+      "sources": [],
+      "target": "result.email"
+    },
+    {
+      "expression": "phone",
+      "sources": [],
+      "target": "result.phone"
+    },
+    {
+      "expression": "address",
+      "sources": [],
+      "target": "result.address"
+    },
+    {
+      "expression": "city",
+      "sources": [],
+      "target": "result.city"
+    },
+    {
+      "expression": "state",
+      "sources": [],
+      "target": "result.state"
+    },
+    {
+      "expression": "zip_code",
+      "sources": [],
+      "target": "result.zip_code"
+    },
+    {
+      "expression": "country",
+      "sources": [],
+      "target": "result.country"
+    }
+  ],
+  "total_lineages": 10
+}

@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "UPPER(email) AS email_upper",
+      "sources": [],
+      "target": "result.email_upper"
+    }
+  ],
+  "total_lineages": 1
+}

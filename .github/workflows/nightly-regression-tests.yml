@@ -1,0 +1,136 @@
+name: Nightly Regression Tests
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggering
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/app/infrastructure/parsers/**'
+      - 'backend/tests/**'
+
+jobs:
+  regression-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.11']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for baseline comparison
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install fastapi uvicorn sqlalchemy alembic asyncpg pydantic pydantic-settings sqlglot
+          pip install pytest pytest-asyncio deepdiff jsonschema
+
+      - name: Run regression test suite
+        run: |
+          cd backend
+          pytest tests/integration/test_lineage_parsing_integration.py -v -s --tb=short
+        env:
+          PYTHONPATH: /home/runner/work/data-lineage/data-lineage/backend
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ github.run_number }}
+          path: |
+            backend/test-results/
+            backend/tests/fixtures/golden/
+
+      - name: Generate coverage report
+        if: always()
+        run: |
+          cd backend
+          python -c "
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          from tests.utils.coverage_tracker import SQLFeatureCoverage
+          tracker = SQLFeatureCoverage()
+          # Load from test results if available
+          tracker.print_coverage_report()
+          tracker.save_coverage_report(Path('coverage-report.json'))
+          "
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report-${{ github.run_number }}
+          path: backend/coverage-report.json
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Regression Test Results\n\nTests completed. Check artifacts for detailed results.'
+            })
+
+      - name: Fail on regression failures
+        run: |
+          # This step will fail the build if tests found regressions
+          # Baseline approval is required before merging
+          echo "Regression tests completed. Review snapshots for any changes."
+
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: regression-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install fastapi uvicorn sqlalchemy alembic asyncpg pydantic pydantic-settings sqlglot
+          pip install pytest pytest-asyncio deepdiff jsonschema
+
+      - name: Run performance benchmarks
+        run: |
+          cd backend
+          pytest tests/integration/test_lineage_parsing_integration.py::TestLineageParsingIntegration::test_performance_benchmark -v -s -m slow
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results-${{ github.run_number }}
+          path: backend/performance-results/

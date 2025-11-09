@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "price + tax AS total_price",
+      "sources": [],
+      "target": "result.total_price"
+    }
+  ],
+  "total_lineages": 1
+}

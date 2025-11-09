@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://data-lineage.dev/schemas/test-case.json",
+  "title": "SQL Lineage Test Case",
+  "description": "Schema for SQL lineage parsing test cases",
+  "type": "object",
+  "required": ["test_id", "name", "difficulty", "sql", "expected_lineage"],
+  "properties": {
+    "test_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique test identifier (e.g., 'basic-001', 'join-015')"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable test name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of what this test validates"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["basic", "intermediate", "advanced", "expert", "edge_case"],
+      "description": "Complexity level of the SQL query"
+    },
+    "phase": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6,
+      "description": "Development phase (1=basic, 2=joins, 3=agg, 4=subquery, 5=advanced, 6=edge)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Feature tags for categorization"
+    },
+    "dialect": {
+      "type": "string",
+      "enum": ["postgres", "mysql", "tsql", "spark", "generic"],
+      "default": "postgres",
+      "description": "SQL dialect for parsing"
+    },
+    "sql": {
+      "type": "string",
+      "minLength": 1,
+      "description": "SQL query to parse"
+    },
+    "source_tables": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/table_definition"
+      },
+      "description": "Schema definitions for source tables"
+    },
+    "expected_lineage": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/lineage_expectation"
+      },
+      "description": "Expected lineage relationships"
+    },
+    "min_confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.8,
+      "description": "Minimum acceptable confidence score for this test"
+    },
+    "max_parse_time_ms": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 5000,
+      "description": "Maximum allowed parse time in milliseconds"
+    },
+    "skip": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip this test (for known failures during development)"
+    },
+    "skip_reason": {
+      "type": "string",
+      "description": "Reason for skipping (required if skip=true)"
+    }
+  },
+  "definitions": {
+    "table_definition": {
+      "type": "object",
+      "required": ["name", "columns"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Table name (can include schema: schema.table)"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/column_definition"
+          }
+        }
+      }
+    },
+    "column_definition": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Column name"
+        },
+        "type": {
+          "type": "string",
+          "description": "SQL data type"
+        },
+        "nullable": {
+          "type": "boolean",
+          "default": true
+        },
+        "primary_key": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "lineage_expectation": {
+      "type": "object",
+      "required": ["target", "sources"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "description": "Target column FQN (e.g., 'result.full_name')"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Source column FQNs (e.g., ['customers.first_name'])"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Transformation expression (optional)"
+        },
+        "transformation_type": {
+          "type": "string",
+          "enum": ["projection", "transformation", "aggregation", "join", "subquery", "window"],
+          "default": "projection"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Expected confidence score"
+        }
+      }
+    }
+  }
+}
