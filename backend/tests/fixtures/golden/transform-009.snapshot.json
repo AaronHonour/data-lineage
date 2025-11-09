@@ -3,7 +3,9 @@
   "lineages": [
     {
       "expression": "UPPER(email) AS email_upper",
-      "sources": [],
+      "sources": [
+        "customers.email"
+      ],
       "target": "result.email_upper"
     }
   ],

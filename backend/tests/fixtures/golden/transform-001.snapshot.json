@@ -3,7 +3,10 @@
   "lineages": [
     {
       "expression": "first_name || ' ' || last_name AS full_name",
-      "sources": [],
+      "sources": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
       "target": "result.full_name"
     }
   ],

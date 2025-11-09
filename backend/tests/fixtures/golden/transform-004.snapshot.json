@@ -3,7 +3,10 @@
   "lineages": [
     {
       "expression": "quantity * unit_price AS line_total",
-      "sources": [],
+      "sources": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
       "target": "result.line_total"
     }
   ],

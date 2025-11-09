@@ -3,7 +3,9 @@
   "lineages": [
     {
       "expression": "COALESCE(middle_name, '') AS middle_name_safe",
-      "sources": [],
+      "sources": [
+        "customers.middle_name"
+      ],
       "target": "result.middle_name_safe"
     }
   ],

@@ -3,12 +3,16 @@
   "lineages": [
     {
       "expression": "c.customer_id",
-      "sources": [],
+      "sources": [
+        "customers.customer_id"
+      ],
       "target": "result.customer_id"
     },
     {
       "expression": "c.email",
-      "sources": [],
+      "sources": [
+        "customers.email"
+      ],
       "target": "result.email"
     }
   ],

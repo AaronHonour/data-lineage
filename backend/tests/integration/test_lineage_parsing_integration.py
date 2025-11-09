@@ -60,7 +60,8 @@ class TestLineageParsingIntegration:
         self,
         sql_parser: SQLLineageExtractor,
         sql: str,
-        target_table_fqn: str = "result"
+        target_table_fqn: str = "result",
+        source_tables: list = None
     ) -> dict:
         """
         Parse SQL and convert result to dictionary for comparison.
@@ -69,11 +70,21 @@ class TestLineageParsingIntegration:
             sql_parser: Parser instance
             sql: SQL query
             target_table_fqn: Target table FQN
+            source_tables: List of TableDefinition objects
 
         Returns:
             Dictionary with lineage data
         """
-        lineages = sql_parser.extract_lineage(sql, target_table_fqn)
+        # Build schema dictionary from source tables
+        schema = {}
+        if source_tables:
+            for table in source_tables:
+                schema[table.name] = {
+                    col.name: col.type
+                    for col in table.columns
+                }
+
+        lineages = sql_parser.extract_lineage(sql, target_table_fqn, schema=schema)
 
         return {
             "lineages": [
@@ -192,11 +203,12 @@ class TestLineageParsingIntegration:
                 # Measure performance
                 start_time = time.perf_counter()
 
-                # Parse SQL
+                # Parse SQL with schema
                 actual_result = self.parse_and_convert_to_dict(
                     sql_parser,
                     test_case.sql,
-                    "result"
+                    "result",
+                    test_case.source_tables
                 )
 
                 end_time = time.perf_counter()

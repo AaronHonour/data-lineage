@@ -3,7 +3,10 @@
   "lineages": [
     {
       "expression": "price + tax AS total_price",
-      "sources": [],
+      "sources": [
+        "products.price",
+        "products.tax"
+      ],
       "target": "result.total_price"
     }
   ],

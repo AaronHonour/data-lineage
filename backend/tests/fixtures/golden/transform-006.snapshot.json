@@ -3,7 +3,9 @@
   "lineages": [
     {
       "expression": "CAST(customer_id AS VARCHAR) AS customer_id_str",
-      "sources": [],
+      "sources": [
+        "customers.customer_id"
+      ],
       "target": "result.customer_id_str"
     }
   ],

@@ -2,10 +2,33 @@
   "confidence_score": 1.0,
   "lineages": [
     {
-      "expression": "*",
-      "sources": [],
-      "target": "result.*"
+      "expression": "customers.customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "customers.first_name",
+      "sources": [
+        "customers.first_name"
+      ],
+      "target": "result.first_name"
+    },
+    {
+      "expression": "customers.last_name",
+      "sources": [
+        "customers.last_name"
+      ],
+      "target": "result.last_name"
+    },
+    {
+      "expression": "customers.email",
+      "sources": [
+        "customers.email"
+      ],
+      "target": "result.email"
     }
   ],
-  "total_lineages": 1
+  "total_lineages": 4
 }

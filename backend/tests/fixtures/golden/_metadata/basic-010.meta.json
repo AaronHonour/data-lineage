@@ -1,8 +1,8 @@
 {
   "test_id": "basic-010",
-  "created_at": "2025-11-09T20:05:12.137976",
-  "updated_at": "2025-11-09T20:05:12.137976",
-  "hash": "296530facfb9dd8c7c1acde6fc306d0788f3a3bbca7f38d9055464cc8a1825b1",
+  "created_at": "2025-11-09T20:18:58.245146",
+  "updated_at": "2025-11-09T20:18:58.245146",
+  "hash": "4d6189afc9ed408036d5511eb120ecbc0fbd77cab8fa018327c121ba6538337f",
   "parser_version": "1.0.0",
   "notes": "Auto-approved initial baseline"
 }
