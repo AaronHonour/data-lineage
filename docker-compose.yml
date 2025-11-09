@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for lineage metadata
+  lineage-db:
+    image: postgres:15-alpine
+    container_name: lineage-postgres
+    environment:
+      POSTGRES_USER: lineage
+      POSTGRES_PASSWORD: lineage_password
+      POSTGRES_DB: lineage
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lineage"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Sample PostgreSQL database for testing connectors
+  sample-db:
+    image: postgres:15-alpine
+    container_name: sample-postgres
+    environment:
+      POSTGRES_USER: sample
+      POSTGRES_PASSWORD: sample_password
+      POSTGRES_DB: sample
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./sample-data/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - sample_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sample"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lineage-backend
+    depends_on:
+      lineage-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lineage:lineage_password@lineage-db:5432/lineage
+      DEBUG: "true"
+      ALLOWED_ORIGINS: '["http://localhost:3000"]'
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend (optional, for full stack testing)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: lineage-frontend
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     VITE_API_URL: http://localhost:8000
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   command: npm run dev
+
+volumes:
+  postgres_data:
+  sample_data:
