@@ -1,0 +1,20 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "c1.customer_id AS customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "c2.customer_id AS referrer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.referrer_id"
+    }
+  ],
+  "total_lineages": 2
+}

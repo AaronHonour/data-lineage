@@ -1,0 +1,336 @@
+[
+  {
+    "test_id": "trans-001",
+    "name": "SUBSTRING function",
+    "description": "SUBSTRING string extraction",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["string_functions", "substring", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, SUBSTRING(email, 1, 10) AS email_prefix FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email_prefix",
+        "sources": ["customers.email"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-002",
+    "name": "COALESCE function",
+    "description": "COALESCE for NULL handling",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["null_handling", "coalesce", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, COALESCE(phone, email, 'no_contact') AS contact_info FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "phone", "type": "VARCHAR"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.contact_info",
+        "sources": ["customers.phone", "customers.email"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-003",
+    "name": "NULLIF function",
+    "description": "NULLIF for conditional NULL",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["null_handling", "nullif", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, NULLIF(status, 'unknown') AS valid_status FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.valid_status",
+        "sources": ["customers.status"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-004",
+    "name": "DATE_TRUNC function",
+    "description": "DATE_TRUNC for date truncation",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["date_functions", "date_trunc", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, DATE_TRUNC('month', created_at) AS created_month FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "created_at", "type": "TIMESTAMP"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.created_month",
+        "sources": ["customers.created_at"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-005",
+    "name": "EXTRACT function",
+    "description": "EXTRACT parts from date/time",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["date_functions", "extract", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, EXTRACT(YEAR FROM created_at) AS created_year FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "created_at", "type": "TIMESTAMP"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.created_year",
+        "sources": ["customers.created_at"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-006",
+    "name": "REPLACE function",
+    "description": "REPLACE string substitution",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["string_functions", "replace", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, REPLACE(email, '@old.com', '@new.com') AS updated_email FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.updated_email",
+        "sources": ["customers.email"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-007",
+    "name": "TRIM function",
+    "description": "TRIM whitespace removal",
+    "difficulty": "basic",
+    "phase": 8,
+    "tags": ["string_functions", "trim", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, TRIM(name) AS clean_name FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "name", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.clean_name",
+        "sources": ["customers.name"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-008",
+    "name": "Nested CASE WHEN",
+    "description": "Nested CASE expressions",
+    "difficulty": "advanced",
+    "phase": 8,
+    "tags": ["case_when", "nested", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, CASE WHEN total_spent > 10000 THEN 'vip' WHEN total_spent > 5000 THEN CASE WHEN order_count > 10 THEN 'premium' ELSE 'standard' END ELSE 'basic' END AS tier FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_spent", "type": "DECIMAL"},
+          {"name": "order_count", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.tier",
+        "sources": ["customers.total_spent", "customers.order_count"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-009",
+    "name": "SPLIT_PART function",
+    "description": "SPLIT_PART string splitting",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["string_functions", "split_part", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, SPLIT_PART(email, '@', 2) AS email_domain FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email_domain",
+        "sources": ["customers.email"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "trans-010",
+    "name": "GREATEST function",
+    "description": "GREATEST for max of values",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["comparison_functions", "greatest", "transformations"],
+    "dialect": "postgres",
+    "sql": "SELECT order_id, GREATEST(price1, price2, price3) AS max_price FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "price1", "type": "DECIMAL"},
+          {"name": "price2", "type": "DECIMAL"},
+          {"name": "price3", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.max_price",
+        "sources": ["orders.price1", "orders.price2", "orders.price3"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  }
+]

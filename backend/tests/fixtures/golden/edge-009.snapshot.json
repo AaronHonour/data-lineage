@@ -1,0 +1,28 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "order_date",
+      "sources": [
+        "orders.order_date"
+      ],
+      "target": "result.order_date"
+    },
+    {
+      "expression": "COUNT(*) FILTER(WHERE status = 'completed') OVER (PARTITION BY customer_id) AS completed_count",
+      "sources": [
+        "orders.customer_id",
+        "orders.status"
+      ],
+      "target": "result.completed_count"
+    }
+  ],
+  "total_lineages": 3
+}

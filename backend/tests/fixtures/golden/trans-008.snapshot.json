@@ -1,0 +1,21 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "CASE WHEN total_spent > 10000 THEN 'vip' WHEN total_spent > 5000 THEN CASE WHEN order_count > 10 THEN 'premium' ELSE 'standard' END ELSE 'basic' END AS tier",
+      "sources": [
+        "customers.order_count",
+        "customers.total_spent"
+      ],
+      "target": "result.tier"
+    }
+  ],
+  "total_lineages": 2
+}

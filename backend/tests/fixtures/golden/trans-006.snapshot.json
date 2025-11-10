@@ -1,0 +1,20 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "REPLACE(email, '@old.com', '@new.com') AS updated_email",
+      "sources": [
+        "customers.email"
+      ],
+      "target": "result.updated_email"
+    }
+  ],
+  "total_lineages": 2
+}

@@ -1,0 +1,20 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "NULLIF(status, 'unknown') AS valid_status",
+      "sources": [
+        "customers.status"
+      ],
+      "target": "result.valid_status"
+    }
+  ],
+  "total_lineages": 2
+}

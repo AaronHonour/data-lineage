@@ -1,0 +1,20 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "TIMESTAMP_TRUNC(created_at, MONTH) AS created_month",
+      "sources": [
+        "customers.created_at"
+      ],
+      "target": "result.created_month"
+    }
+  ],
+  "total_lineages": 2
+}

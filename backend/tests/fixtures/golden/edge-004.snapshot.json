@@ -1,0 +1,23 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "order_id",
+      "sources": [
+        "orders.order_id"
+      ],
+      "target": "result.order_id"
+    },
+    {
+      "expression": "(COALESCE(price, 0) * COALESCE(quantity, 1)) + COALESCE(tax, 0) - COALESCE(discount, 0) AS total",
+      "sources": [
+        "orders.discount",
+        "orders.price",
+        "orders.quantity",
+        "orders.tax"
+      ],
+      "target": "result.total"
+    }
+  ],
+  "total_lineages": 2
+}

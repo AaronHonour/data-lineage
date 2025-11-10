@@ -1,0 +1,20 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "\"customer id\"",
+      "sources": [
+        "customers.\"customer id\""
+      ],
+      "target": "result.customer id"
+    },
+    {
+      "expression": "\"email address\"",
+      "sources": [
+        "customers.\"email address\""
+      ],
+      "target": "result.email address"
+    }
+  ],
+  "total_lineages": 2
+}

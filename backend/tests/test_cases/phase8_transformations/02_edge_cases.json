@@ -1,0 +1,373 @@
+[
+  {
+    "test_id": "edge-001",
+    "name": "Column name with special characters",
+    "description": "Columns with spaces and special chars",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["edge_cases", "special_chars"],
+    "dialect": "postgres",
+    "sql": "SELECT \"customer id\", \"email address\" FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer id", "type": "INTEGER"},
+          {"name": "email address", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer id",
+        "sources": ["customers.customer id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email address",
+        "sources": ["customers.email address"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "edge-002",
+    "name": "Self-join with complex condition",
+    "description": "Self-join with inequality conditions",
+    "difficulty": "advanced",
+    "phase": 8,
+    "tags": ["edge_cases", "self_join", "complex_conditions"],
+    "dialect": "postgres",
+    "sql": "SELECT c1.customer_id AS customer_id, c2.customer_id AS referrer_id FROM customers c1 INNER JOIN customers c2 ON c1.referrer_id = c2.customer_id AND c1.created_at > c2.created_at",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "referrer_id", "type": "INTEGER"},
+          {"name": "created_at", "type": "TIMESTAMP"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.referrer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "edge-003",
+    "name": "Multiple levels of COALESCE",
+    "description": "Nested COALESCE functions",
+    "difficulty": "advanced",
+    "phase": 8,
+    "tags": ["edge_cases", "coalesce", "nested"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, COALESCE(phone, COALESCE(mobile, email), 'no_contact') AS contact FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "phone", "type": "VARCHAR"},
+          {"name": "mobile", "type": "VARCHAR"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.contact",
+        "sources": ["customers.phone", "customers.mobile", "customers.email"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "edge-004",
+    "name": "Complex arithmetic with NULL handling",
+    "description": "Arithmetic operations with COALESCE",
+    "difficulty": "advanced",
+    "phase": 8,
+    "tags": ["edge_cases", "arithmetic", "null_handling"],
+    "dialect": "postgres",
+    "sql": "SELECT order_id, (COALESCE(price, 0) * COALESCE(quantity, 1)) + COALESCE(tax, 0) - COALESCE(discount, 0) AS total FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "price", "type": "DECIMAL"},
+          {"name": "quantity", "type": "INTEGER"},
+          {"name": "tax", "type": "DECIMAL"},
+          {"name": "discount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total",
+        "sources": ["orders.price", "orders.quantity", "orders.tax", "orders.discount"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "edge-005",
+    "name": "DISTINCT in aggregation",
+    "description": "COUNT DISTINCT with GROUP BY",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["edge_cases", "distinct", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, COUNT(DISTINCT product_id) AS unique_products, COUNT(*) AS total_orders FROM orders GROUP BY customer_id",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "product_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.unique_products",
+        "sources": ["orders.product_id"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.total_orders",
+        "sources": [],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "edge-006",
+    "name": "Subquery in SELECT list",
+    "description": "Scalar subquery in projection",
+    "difficulty": "advanced",
+    "phase": 8,
+    "tags": ["edge_cases", "scalar_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.name, (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id) AS order_count FROM customers c",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "name", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.name",
+        "sources": ["customers.name"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "edge-007",
+    "name": "Complex WHERE with OR/AND",
+    "description": "Complex boolean logic in WHERE clause",
+    "difficulty": "intermediate",
+    "phase": 8,
+    "tags": ["edge_cases", "where_clause", "boolean_logic"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, status FROM customers WHERE (status = 'active' AND total_spent > 1000) OR (status = 'vip' AND total_spent > 100)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"},
+          {"name": "total_spent", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.status",
+        "sources": ["customers.status"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "edge-008",
+    "name": "Multiple UNION with ORDER BY and LIMIT",
+    "description": "Three-way UNION with ORDER BY and LIMIT",
+    "difficulty": "expert",
+    "phase": 8,
+    "tags": ["edge_cases", "union", "order_by", "limit"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, 'A' AS segment FROM customers WHERE total_spent > 10000 UNION SELECT customer_id, 'B' AS segment FROM customers WHERE total_spent > 5000 AND total_spent <= 10000 UNION SELECT customer_id, 'C' AS segment FROM customers WHERE total_spent <= 5000 ORDER BY customer_id LIMIT 100",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_spent", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.segment",
+        "sources": [],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 5000
+  },
+  {
+    "test_id": "edge-009",
+    "name": "Window function with FILTER",
+    "description": "Window function with FILTER clause",
+    "difficulty": "expert",
+    "phase": 8,
+    "tags": ["edge_cases", "window_functions", "filter"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, COUNT(*) FILTER (WHERE status = 'completed') OVER (PARTITION BY customer_id) AS completed_count FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.completed_count",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "edge-010",
+    "name": "Lateral join",
+    "description": "LATERAL JOIN with subquery",
+    "difficulty": "expert",
+    "phase": 8,
+    "tags": ["edge_cases", "lateral_join", "advanced"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.name, recent.order_date FROM customers c CROSS JOIN LATERAL (SELECT order_date FROM orders WHERE customer_id = c.customer_id ORDER BY order_date DESC LIMIT 1) recent",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "name", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.name",
+        "sources": ["customers.name"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 5000
+  }
+]

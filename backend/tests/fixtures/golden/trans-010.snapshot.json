@@ -1,0 +1,22 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "order_id",
+      "sources": [
+        "orders.order_id"
+      ],
+      "target": "result.order_id"
+    },
+    {
+      "expression": "GREATEST(price1, price2, price3) AS max_price",
+      "sources": [
+        "orders.price1",
+        "orders.price2",
+        "orders.price3"
+      ],
+      "target": "result.max_price"
+    }
+  ],
+  "total_lineages": 2
+}

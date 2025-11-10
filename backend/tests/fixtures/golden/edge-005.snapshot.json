@@ -1,0 +1,25 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "COUNT(DISTINCT product_id) AS unique_products",
+      "sources": [
+        "orders.product_id"
+      ],
+      "target": "result.unique_products"
+    },
+    {
+      "expression": "COUNT(*) AS total_orders",
+      "sources": [],
+      "target": "result.total_orders"
+    }
+  ],
+  "total_lineages": 3
+}
