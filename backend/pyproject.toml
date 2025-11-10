@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "Data Lineage Tool Backend - Column-level lineage tracking across heterogeneous data sources"
 authors = ["Data Engineering Team"]
 readme = "README.md"
-python = "^3.11"
 
 [tool.poetry.dependencies]
 python = "^3.11"
