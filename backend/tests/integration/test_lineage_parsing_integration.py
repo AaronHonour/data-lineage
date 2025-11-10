@@ -1021,6 +1021,181 @@ class TestLineageParsingIntegration:
             ])
             pytest.fail(f"Test failures:\n{failure_msg}")
 
+    def load_phase6_test_cases(self, test_case_loader: TestCaseLoader) -> List[TestCase]:
+        """Load all Phase 6 test cases."""
+        test_dir = Path(__file__).parent.parent / "test_cases" / "phase6_set_operations"
+
+        if not test_dir.exists():
+            return []
+
+        categories = test_case_loader.load_directory(test_dir)
+
+        test_cases = []
+        for category_tests in categories.values():
+            test_cases.extend(category_tests)
+
+        return test_cases
+
+    def test_phase6_set_operation_queries(
+        self,
+        test_case_loader,
+        sql_parser,
+        regression_tester,
+        performance_tester,
+        coverage_tracker
+    ):
+        """Test Phase 6 set operation queries with regression and performance testing."""
+
+        # Load test cases
+        test_cases = self.load_phase6_test_cases(test_case_loader)
+
+        if not test_cases:
+            pytest.skip("No Phase 6 test cases found")
+
+        print(f"\nRunning {len(test_cases)} Phase 6 test cases...")
+        print("=" * 70)
+
+        regression_results: List[RegressionResult] = []
+        performance_results: List[PerformanceMetrics] = []
+        failures = []
+
+        for test_case in test_cases:
+            print(f"\n[{test_case.test_id}] {test_case.name}")
+
+            # Skip if marked
+            if test_case.skip:
+                print(f"  ⊘ SKIPPED: {test_case.skip_reason}")
+                continue
+
+            try:
+                # Measure performance
+                start_time = time.perf_counter()
+
+                # Parse SQL with schema
+                actual_result = self.parse_and_convert_to_dict(
+                    sql_parser,
+                    test_case.sql,
+                    "result",
+                    test_case.source_tables
+                )
+
+                end_time = time.perf_counter()
+                parse_time_ms = (end_time - start_time) * 1000
+
+                # Record performance
+                perf_metrics = PerformanceMetrics(
+                    test_id=test_case.test_id,
+                    parse_time_ms=parse_time_ms,
+                    success=True,
+                    sql_length=len(test_case.sql)
+                )
+                performance_results.append(perf_metrics)
+
+                # Check performance
+                if parse_time_ms <= test_case.max_parse_time_ms:
+                    print(f"  ✓ Performance: {parse_time_ms:.2f}ms")
+                else:
+                    print(f"  ⚠ Performance: {parse_time_ms:.2f}ms (threshold: {test_case.max_parse_time_ms}ms)")
+
+                # Compare with expected lineage
+                matches, errors = self.compare_lineage_with_expected(
+                    actual_result,
+                    test_case.expected_lineage
+                )
+
+                if not matches:
+                    print(f"  ✗ Lineage mismatch:")
+                    for error in errors:
+                        print(f"    - {error}")
+                    failures.append({
+                        "test_id": test_case.test_id,
+                        "errors": errors
+                    })
+                else:
+                    print(f"  ✓ Lineage matches expected")
+
+                # Regression test
+                regression_result = regression_tester.test_against_snapshot(
+                    test_case.test_id,
+                    actual_result,
+                    test_case.min_confidence
+                )
+                regression_results.append(regression_result)
+
+                if not regression_result.passed:
+                    if regression_result.has_baseline:
+                        print(f"  ✗ Regression test failed")
+                        if regression_result.diff:
+                            print(f"    {regression_result.diff}")
+                    else:
+                        print(f"  ⚠ No baseline - created")
+
+                # Track coverage
+                coverage_tracker.mark_features_from_tags(test_case.tags, passed=matches)
+
+                # Mark overall test status
+                if matches and regression_result.passed:
+                    print(f"✓ {test_case.test_id} - PASSED")
+                else:
+                    print(f"✗ {test_case.test_id} - FAILED")
+                    if regression_result.has_baseline and not regression_result.passed:
+                        print(f"  Diff:\n{regression_result.diff}")
+
+            except Exception as e:
+                print(f"  ✗ Error: {e}")
+                failures.append({
+                    "test_id": test_case.test_id,
+                    "errors": [str(e)]
+                })
+
+                # Record failed performance
+                perf_metrics = PerformanceMetrics(
+                    test_id=test_case.test_id,
+                    parse_time_ms=0,
+                    success=False,
+                    error=str(e)
+                )
+                performance_results.append(perf_metrics)
+
+        # Print summary reports
+        print("\n" + "=" * 70)
+        print("TEST SUMMARY")
+        print("=" * 70)
+
+        # Regression summary
+        RegressionReporter.print_summary(regression_results)
+
+        # Performance summary
+        perf_tester = PerformanceTester()
+        perf_tester.results = performance_results
+        perf_summary = perf_tester.get_summary()
+
+        print("\nPERFORMANCE SUMMARY")
+        print("-" * 70)
+        print(f"Total Tests:           {perf_summary.get('total_tests', 0)}")
+        print(f"Successful:            {perf_summary.get('successful', 0)}")
+        print(f"Failed:                {perf_summary.get('failed', 0)}")
+
+        if perf_summary.get('successful', 0) > 0:
+            print(f"Avg Parse Time:        {perf_summary['avg_time_ms']:.2f}ms")
+            print(f"Min Parse Time:        {perf_summary['min_time_ms']:.2f}ms")
+            print(f"Max Parse Time:        {perf_summary['max_time_ms']:.2f}ms")
+            print(f"Median Parse Time:     {perf_summary['median_time_ms']:.2f}ms")
+            print(f"Within Threshold:      {perf_summary['within_threshold']}")
+            print(f"Exceeded Threshold:    {perf_summary['exceeded_threshold']}")
+
+        # Coverage summary
+        print("\n")
+        coverage_tracker.print_coverage_report()
+
+        # Assert no failures
+        if failures:
+            failure_msg = "\n".join([
+                f"{f['test_id']}: {', '.join(f['errors'])}"
+                for f in failures
+            ])
+            pytest.fail(f"Test failures:\n{failure_msg}")
+
     def test_load_test_cases_schema_validation(self, test_case_loader):
         """Test that all test case files are valid JSON and pass schema validation."""
 

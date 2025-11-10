@@ -1,0 +1,317 @@
+[
+  {
+    "test_id": "set-011",
+    "name": "UNION with JOINs",
+    "description": "UNION combining results from joined tables",
+    "difficulty": "advanced",
+    "phase": 6,
+    "tags": ["union", "inner_join", "set_operations"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, o.total_amount FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id WHERE o.total_amount > 1000 UNION SELECT c.customer_id, c.email, 0 AS total_amount FROM customers c WHERE c.customer_id NOT IN (SELECT customer_id FROM orders)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 5000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-012",
+    "name": "Mixed set operations",
+    "description": "Combining UNION, INTERSECT, and EXCEPT",
+    "difficulty": "expert",
+    "phase": 6,
+    "tags": ["union", "intersect", "except", "set_operations", "mixed"],
+    "dialect": "postgres",
+    "sql": "(SELECT customer_id FROM customers WHERE created_at > '2024-01-01' UNION SELECT customer_id FROM orders WHERE total_amount > 1000) INTERSECT SELECT customer_id FROM customers WHERE status = 'active'",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "created_at", "type": "DATE"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id", "orders.customer_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 5000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-013",
+    "name": "UNION ALL with LIMIT",
+    "description": "UNION ALL with LIMIT clause",
+    "difficulty": "intermediate",
+    "phase": 6,
+    "tags": ["union_all", "limit", "set_operations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE status = 'active' UNION ALL SELECT customer_id, email FROM customers WHERE status = 'inactive' LIMIT 100",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-014",
+    "name": "UNION with column aliases",
+    "description": "UNION with different column names requiring aliases",
+    "difficulty": "advanced",
+    "phase": 6,
+    "tags": ["union", "aliases", "set_operations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id AS id, email AS contact, 'customer' AS type FROM customers UNION SELECT vendor_id AS id, vendor_email AS contact, 'vendor' AS type FROM vendors",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "vendors",
+        "columns": [
+          {"name": "vendor_id", "type": "INTEGER"},
+          {"name": "vendor_email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.id",
+        "sources": ["customers.customer_id", "vendors.vendor_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.contact",
+        "sources": ["customers.email", "vendors.vendor_email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.type",
+        "sources": [],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 4000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-015",
+    "name": "INTERSECT with aggregation",
+    "description": "INTERSECT on aggregated results",
+    "difficulty": "advanced",
+    "phase": 6,
+    "tags": ["intersect", "aggregations", "set_operations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id FROM orders WHERE total_amount > 500 GROUP BY customer_id HAVING COUNT(*) > 5 INTERSECT SELECT customer_id FROM customers WHERE status = 'premium'",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      },
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id", "customers.customer_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 4000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-016",
+    "name": "EXCEPT with subquery",
+    "description": "EXCEPT combining main query with subquery result",
+    "difficulty": "advanced",
+    "phase": 6,
+    "tags": ["except", "subqueries", "set_operations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE created_at > '2024-01-01' EXCEPT SELECT customer_id, email FROM (SELECT c.customer_id, c.email FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id WHERE o.status = 'cancelled') cancelled_orders",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "created_at", "type": "DATE"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 5000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-017",
+    "name": "UNION with CTEs",
+    "description": "UNION combining CTE results",
+    "difficulty": "advanced",
+    "phase": 6,
+    "tags": ["union", "cte", "with_clause", "set_operations"],
+    "dialect": "postgres",
+    "sql": "WITH high_value AS (SELECT customer_id, SUM(total_amount) AS total FROM orders GROUP BY customer_id HAVING SUM(total_amount) > 5000), frequent AS (SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING COUNT(*) > 10) SELECT customer_id FROM high_value UNION SELECT customer_id FROM frequent",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 5000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  },
+  {
+    "test_id": "set-018",
+    "name": "Parenthesized set operations",
+    "description": "Set operations with explicit parentheses for precedence",
+    "difficulty": "expert",
+    "phase": 6,
+    "tags": ["union", "intersect", "set_operations", "precedence"],
+    "dialect": "postgres",
+    "sql": "(SELECT customer_id FROM customers WHERE status = 'active' INTERSECT SELECT customer_id FROM orders WHERE total_amount > 1000) UNION (SELECT customer_id FROM customers WHERE status = 'premium')",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id", "orders.customer_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 5000,
+    "skip": true,
+    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+  }
+]
