@@ -13,7 +13,7 @@ import pytest
 from uuid import uuid4
 
 from app.application.services.lineage_query_service import LineageQueryService
-from app.domain.models.column_lineage import ColumnLineageModel
+from app.infrastructure.database.models import ColumnLineageModel
 
 
 class TestLineageQueryService:
