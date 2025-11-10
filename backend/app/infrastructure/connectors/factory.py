@@ -4,6 +4,8 @@ from typing import Type
 from app.domain.entities.data_source import DataSourceType
 from .base import BaseConnector
 from .postgres_connector import PostgreSQLConnector
+from .mysql_connector import MySQLConnector
+from .sqlserver_connector import SQLServerConnector
 
 
 class ConnectorFactory:
@@ -11,8 +13,9 @@ class ConnectorFactory:
 
     _connectors: dict[str, Type[BaseConnector]] = {
         DataSourceType.POSTGRES.value: PostgreSQLConnector,
+        DataSourceType.MYSQL.value: MySQLConnector,
+        DataSourceType.SQLSERVER.value: SQLServerConnector,
         # Add more connectors here as they're implemented
-        # DataSourceType.MYSQL.value: MySQLConnector,
         # DataSourceType.ICEBERG.value: IcebergConnector,
         # DataSourceType.DELTA.value: DeltaConnector,
     }

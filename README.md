@@ -5,7 +5,7 @@ A production-grade data lineage tracking system that provides **column-level lin
 ## Features
 
 - **Column-Level Lineage**: Track how data flows from source columns to target columns through transformations
-- **Multi-Source Support**: PostgreSQL, MySQL, SQL Server, Apache Iceberg, Delta Lake
+- **Multi-Source Support**: PostgreSQL ✅, MySQL ✅, SQL Server ✅, Apache Iceberg (planned), Delta Lake (planned)
 - **Automatic Discovery**: Metadata API integration to automatically discover tables, columns, and transformations
 - **SQL Parsing**: Intelligent SQL parsing using sqlglot to extract lineage from views, stored procedures, etc.
 - **Interactive Visualization**: React Flow-based interactive lineage graphs
@@ -262,9 +262,9 @@ This demonstrates various types of lineage:
 - [x] SQL parsing with sqlglot
 - [x] Column-level lineage extraction
 - [x] REST API endpoints
+- [x] MySQL connector
+- [x] SQL Server connector
 - [ ] React Flow visualization
-- [ ] MySQL connector
-- [ ] SQL Server connector
 - [ ] Apache Iceberg connector
 - [ ] Delta Lake connector
 - [ ] dbt integration
