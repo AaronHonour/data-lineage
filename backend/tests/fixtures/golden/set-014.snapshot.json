@@ -1,5 +1,27 @@
 {
   "confidence_score": 1.0,
-  "lineages": [],
-  "total_lineages": 0
+  "lineages": [
+    {
+      "expression": "id",
+      "sources": [
+        "customers.customer_id",
+        "vendors.vendor_id"
+      ],
+      "target": "result.id"
+    },
+    {
+      "expression": "contact",
+      "sources": [
+        "customers.email",
+        "vendors.vendor_email"
+      ],
+      "target": "result.contact"
+    },
+    {
+      "expression": "type",
+      "sources": [],
+      "target": "result.type"
+    }
+  ],
+  "total_lineages": 3
 }

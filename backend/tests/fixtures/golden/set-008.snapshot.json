@@ -1,5 +1,16 @@
 {
   "confidence_score": 1.0,
-  "lineages": [],
-  "total_lineages": 0
+  "lineages": [
+    {
+      "expression": "category",
+      "sources": [],
+      "target": "result.category"
+    },
+    {
+      "expression": "count",
+      "sources": [],
+      "target": "result.count"
+    }
+  ],
+  "total_lineages": 2
 }

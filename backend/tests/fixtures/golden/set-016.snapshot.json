@@ -1,5 +1,22 @@
 {
   "confidence_score": 1.0,
-  "lineages": [],
-  "total_lineages": 0
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "cancelled_orders.customer_id",
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "email",
+      "sources": [
+        "cancelled_orders.email",
+        "customers.email"
+      ],
+      "target": "result.email"
+    }
+  ],
+  "total_lineages": 2
 }

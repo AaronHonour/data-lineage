@@ -30,9 +30,7 @@
       }
     ],
     "min_confidence": 1.0,
-    "max_parse_time_ms": 3000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 3000
   },
   {
     "test_id": "set-002",
@@ -66,9 +64,7 @@
       }
     ],
     "min_confidence": 1.0,
-    "max_parse_time_ms": 3000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 3000
   },
   {
     "test_id": "set-003",
@@ -106,9 +102,7 @@
       }
     ],
     "min_confidence": 0.9,
-    "max_parse_time_ms": 3000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 3000
   },
   {
     "test_id": "set-004",
@@ -143,9 +137,7 @@
       }
     ],
     "min_confidence": 0.9,
-    "max_parse_time_ms": 3000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 3000
   },
   {
     "test_id": "set-005",
@@ -178,9 +170,7 @@
       }
     ],
     "min_confidence": 0.9,
-    "max_parse_time_ms": 3000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 3000
   },
   {
     "test_id": "set-006",
@@ -213,9 +203,7 @@
       }
     ],
     "min_confidence": 0.9,
-    "max_parse_time_ms": 4000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 4000
   },
   {
     "test_id": "set-007",
@@ -248,9 +236,7 @@
       }
     ],
     "min_confidence": 1.0,
-    "max_parse_time_ms": 3000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 3000
   },
   {
     "test_id": "set-008",
@@ -289,8 +275,6 @@
       }
     ],
     "min_confidence": 0.8,
-    "max_parse_time_ms": 4000,
-    "skip": true,
-    "skip_reason": "SET OPERATIONS: sqlglot lineage module does not extract column lineage for UNION/INTERSECT/EXCEPT operations"
+    "max_parse_time_ms": 4000
   }
 ]

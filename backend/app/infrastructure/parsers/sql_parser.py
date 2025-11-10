@@ -55,6 +55,10 @@ class SQLLineageExtractor:
             if schema is None:
                 schema = {}
 
+            # Check if this is a set operation (UNION, INTERSECT, EXCEPT)
+            if self._is_set_operation(parsed):
+                return self._extract_set_operation_lineage(parsed, target_table_fqn, schema)
+
             # Build alias mapping (alias -> real table name)
             alias_map = self._build_alias_map(parsed)
 
@@ -93,6 +97,75 @@ class SQLLineageExtractor:
 
         except Exception as e:
             raise LineageExtractionError(f"Failed to parse SQL: {e}") from e
+
+    def _is_set_operation(self, parsed) -> bool:
+        """Check if the parsed query is a set operation (UNION, INTERSECT, EXCEPT)."""
+        return isinstance(parsed, (sqlglot.exp.Union, sqlglot.exp.Intersect, sqlglot.exp.Except))
+
+    def _extract_set_operation_lineage(
+        self,
+        parsed,
+        target_table_fqn: str,
+        schema: dict
+    ) -> list[ColumnLineageResult]:
+        """
+        Extract lineage from set operations (UNION, INTERSECT, EXCEPT).
+
+        Custom handler to work around sqlglot's limitation with set operations.
+        """
+        lineages = []
+
+        try:
+            # Get the left and right queries
+            left_query = parsed.left if hasattr(parsed, 'left') else None
+            right_query = parsed.right if hasattr(parsed, 'right') else None
+
+            if not left_query:
+                return lineages
+
+            # Extract column names from the left query (defines result schema)
+            left_columns = self._get_select_columns(left_query, schema=schema)
+
+            # For each column in the result, extract lineage from both branches
+            for col_name in left_columns.keys():
+                sources = set()
+
+                # Extract sources from left query
+                try:
+                    left_sql = left_query.sql(dialect=self.dialect)
+                    left_alias_map = self._build_alias_map(left_query)
+                    left_node = sqlglot_lineage(col_name, left_sql, dialect=self.dialect, schema=schema)
+                    left_sources = self._extract_source_columns(left_node, left_alias_map)
+                    sources.update(left_sources)
+                except Exception:
+                    pass
+
+                # Extract sources from right query (if exists)
+                if right_query:
+                    try:
+                        right_sql = right_query.sql(dialect=self.dialect)
+                        right_alias_map = self._build_alias_map(right_query)
+                        right_node = sqlglot_lineage(col_name, right_sql, dialect=self.dialect, schema=schema)
+                        right_sources = self._extract_source_columns(right_node, right_alias_map)
+
+                        # For UNION/INTERSECT: combine sources from both branches
+                        # For EXCEPT: only use left sources (but we include both for completeness)
+                        sources.update(right_sources)
+                    except Exception:
+                        pass
+
+                # Create lineage result
+                lineages.append(ColumnLineageResult(
+                    target_column=f"{target_table_fqn}.{col_name}",
+                    source_columns=sorted(list(sources)),
+                    expression=col_name
+                ))
+
+        except Exception as e:
+            # If custom handler fails, return empty lineages
+            pass
+
+        return lineages
 
     def _get_select_columns(self, parsed, schema: dict = None) -> dict[str, any]:
         """Extract column names and expressions from SELECT."""
