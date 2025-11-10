@@ -206,11 +206,16 @@ class TestAuthEndpoints:
     @pytest.mark.asyncio
     async def test_multiple_logins_generate_different_tokens(self, client: AsyncClient):
         """Test that multiple logins generate different tokens."""
+        import asyncio
+
         response1 = await client.post(
             "/api/v1/auth/login",
             data={"username": "admin", "password": "admin123"}
         )
         token1 = response1.json()["access_token"]
+
+        # Wait 1 second to ensure different expiration timestamp
+        await asyncio.sleep(1)
 
         response2 = await client.post(
             "/api/v1/auth/login",

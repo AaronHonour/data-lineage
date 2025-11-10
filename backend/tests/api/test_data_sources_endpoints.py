@@ -57,7 +57,7 @@ class TestDataSourcesEndpoints:
 
             assert "id" in data
             assert data["name"] == "test_postgres"
-            assert data["source_type"] == "postgres"
+            assert data["type"] == "postgres"
             assert data["status"] == "active"
             assert "created_at" in data
 
@@ -270,13 +270,13 @@ class TestDataSourcesEndpoints:
             f"/api/v1/data-sources/{sample_data_source.id}",
             headers=auth_headers,
             json={
-                "status": "inactive"
+                "status": "disabled"
             }
         )
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["status"] == "inactive"
+        assert data["status"] == "disabled"
         assert data["name"] == original_name  # Should remain unchanged
 
     @pytest.mark.asyncio

@@ -33,7 +33,8 @@ async def get_column_lineage(
     column_id: UUID,
     direction: str = Query("both", regex="^(upstream|downstream|both)$"),
     depth: int = Query(5, ge=1, le=10),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get column-level lineage graph for a specific column.
@@ -176,7 +177,8 @@ async def get_table_lineage(
     dataset_id: UUID,
     direction: str = Query("both", regex="^(upstream|downstream|both)$"),
     depth: int = Query(3, ge=1, le=5),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get table-level lineage (aggregated from column lineage).

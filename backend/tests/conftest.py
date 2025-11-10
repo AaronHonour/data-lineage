@@ -26,8 +26,12 @@ from app.infrastructure.database.models import (
 )
 
 
-# Test database URL (in-memory SQLite)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# Test database URL (temporary file-based SQLite)
+# Using a temporary file is more reliable than in-memory for async testing
+import tempfile
+import os
+TEST_DB_FILE = os.path.join(tempfile.gettempdir(), "test_lineage.db")
+TEST_DATABASE_URL = f"sqlite+aiosqlite:///{TEST_DB_FILE}"
 
 
 @pytest.fixture(scope="session")
@@ -38,13 +42,18 @@ def event_loop() -> Generator:
     loop.close()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def test_engine():
     """Create a test database engine."""
+    # Remove existing test database file if it exists
+    if os.path.exists(TEST_DB_FILE):
+        os.remove(TEST_DB_FILE)
+
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
         poolclass=NullPool,
+        connect_args={"check_same_thread": False}  # Required for SQLite async testing
     )
 
     async with engine.begin() as conn:
@@ -56,6 +65,10 @@ async def test_engine():
         await conn.run_sync(Base.metadata.drop_all)
 
     await engine.dispose()
+
+    # Clean up test database file
+    if os.path.exists(TEST_DB_FILE):
+        os.remove(TEST_DB_FILE)
 
 
 @pytest.fixture
@@ -130,15 +143,14 @@ async def sample_data_source(db_session: AsyncSession) -> DataSourceModel:
     data_source = DataSourceModel(
         id=str(uuid4()),
         name="test_postgres",
-        source_type="postgres",
+        type="postgres",
         connection_config={
             "host": "localhost",
             "port": 5432,
             "database": "testdb",
             "username": "test",
             "password": "test"
-        },
-        description="Test PostgreSQL source"
+        }
     )
 
     db_session.add(data_source)
@@ -159,10 +171,10 @@ async def sample_dataset(
     dataset = DatasetModel(
         id=str(uuid4()),
         data_source_id=sample_data_source.id,
+        fully_qualified_name="public.customers",
         name="customers",
         schema_name="public",
-        dataset_type="table",
-        description="Customer table"
+        type="table"
     )
 
     db_session.add(dataset)
@@ -188,7 +200,7 @@ async def sample_columns(
             data_type="INTEGER",
             ordinal_position=1,
             is_nullable=False,
-            description="Primary key"
+            is_primary_key=True
         ),
         ColumnModel(
             id=str(uuid4()),
@@ -196,8 +208,7 @@ async def sample_columns(
             name="email",
             data_type="VARCHAR",
             ordinal_position=2,
-            is_nullable=False,
-            description="Customer email"
+            is_nullable=False
         ),
         ColumnModel(
             id=str(uuid4()),
@@ -205,8 +216,7 @@ async def sample_columns(
             name="created_at",
             data_type="TIMESTAMP",
             ordinal_position=3,
-            is_nullable=True,
-            description="Creation timestamp"
+            is_nullable=True
         ),
     ]
 
@@ -240,25 +250,28 @@ async def sample_lineage_graph(
     raw_events = DatasetModel(
         id=str(uuid4()),
         data_source_id=sample_data_source.id,
+        fully_qualified_name="raw.raw_events",
         name="raw_events",
         schema_name="raw",
-        dataset_type="table"
+        type="table"
     )
 
     stg_events = DatasetModel(
         id=str(uuid4()),
         data_source_id=sample_data_source.id,
+        fully_qualified_name="staging.stg_events",
         name="stg_events",
         schema_name="staging",
-        dataset_type="view"
+        type="view"
     )
 
     fact_orders = DatasetModel(
         id=str(uuid4()),
         data_source_id=sample_data_source.id,
+        fully_qualified_name="analytics.fact_orders",
         name="fact_orders",
         schema_name="analytics",
-        dataset_type="table"
+        type="table"
     )
 
     datasets = [raw_events, stg_events, fact_orders]
