@@ -107,6 +107,25 @@ services:
       - lineage-network
     command: ["tail", "-f", "/dev/null"]  # Keep container running
 
+  # Frontend UI service
+  lineage-ui:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: lineage-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      lineage-api:
+        condition: service_healthy
+    networks:
+      - lineage-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   lineage-db-data:
   postgres-source-data:
