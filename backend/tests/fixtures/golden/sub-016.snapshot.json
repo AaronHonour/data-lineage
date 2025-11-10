@@ -1,0 +1,38 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "customer_order_details.customer_id",
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "email",
+      "sources": [
+        "customer_order_details.email",
+        "customers.email"
+      ],
+      "target": "result.email"
+    },
+    {
+      "expression": "COUNT(order_id) AS order_count",
+      "sources": [
+        "customer_order_details.order_id",
+        "orders.order_id"
+      ],
+      "target": "result.order_count"
+    },
+    {
+      "expression": "SUM(total_amount) AS total_spent",
+      "sources": [
+        "customer_order_details.total_amount",
+        "orders.total_amount"
+      ],
+      "target": "result.total_spent"
+    }
+  ],
+  "total_lineages": 4
+}

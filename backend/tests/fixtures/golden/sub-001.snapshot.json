@@ -1,0 +1,25 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "email",
+      "sources": [
+        "customers.email"
+      ],
+      "target": "result.email"
+    },
+    {
+      "expression": "(SELECT COUNT(*) FROM orders WHERE orders.customer_id = customers.customer_id) AS order_count",
+      "sources": [],
+      "target": "result.order_count"
+    }
+  ],
+  "total_lineages": 3
+}

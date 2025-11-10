@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "employee_id",
+      "sources": [
+        "employees.employee_id"
+      ],
+      "target": "result.employee_id"
+    },
+    {
+      "expression": "name",
+      "sources": [
+        "employees.name"
+      ],
+      "target": "result.name"
+    },
+    {
+      "expression": "level",
+      "sources": [
+        "employee_hierarchy.level"
+      ],
+      "target": "result.level"
+    }
+  ],
+  "total_lineages": 3
+}

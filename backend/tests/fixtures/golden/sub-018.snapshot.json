@@ -1,0 +1,30 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "c.customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "c.email",
+      "sources": [
+        "customers.email"
+      ],
+      "target": "result.email"
+    },
+    {
+      "expression": "recent_orders.recent_order_count",
+      "sources": [
+        "customers.customer_id",
+        "orders.customer_id",
+        "orders.order_date",
+        "recent_orders.recent_order_count"
+      ],
+      "target": "result.recent_order_count"
+    }
+  ],
+  "total_lineages": 3
+}

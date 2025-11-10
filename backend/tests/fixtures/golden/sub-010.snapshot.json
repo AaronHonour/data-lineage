@@ -1,0 +1,13 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "AVG(order_count) AS avg_orders_per_customer",
+      "sources": [
+        "customer_orders.order_count"
+      ],
+      "target": "result.avg_orders_per_customer"
+    }
+  ],
+  "total_lineages": 1
+}

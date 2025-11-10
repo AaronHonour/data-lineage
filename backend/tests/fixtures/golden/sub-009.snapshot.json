@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "c.customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "c.email",
+      "sources": [
+        "customers.email"
+      ],
+      "target": "result.email"
+    },
+    {
+      "expression": "(SELECT SUM(o.total_amount) FROM orders AS o WHERE o.customer_id = c.customer_id) AS total_spent",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_spent"
+    }
+  ],
+  "total_lineages": 3
+}

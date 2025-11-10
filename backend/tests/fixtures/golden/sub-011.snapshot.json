@@ -1,0 +1,29 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "os1.customer_id",
+      "sources": [
+        "order_stats.customer_id",
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "os1.order_count",
+      "sources": [
+        "order_stats.order_count"
+      ],
+      "target": "result.order_count"
+    },
+    {
+      "expression": "os1.total_spent",
+      "sources": [
+        "order_stats.total_spent",
+        "orders.total_amount"
+      ],
+      "target": "result.total_spent"
+    }
+  ],
+  "total_lineages": 3
+}

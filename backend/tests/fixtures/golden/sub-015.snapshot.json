@@ -1,0 +1,16 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_type",
+      "sources": [],
+      "target": "result.customer_type"
+    },
+    {
+      "expression": "customer_count",
+      "sources": [],
+      "target": "result.customer_count"
+    }
+  ],
+  "total_lineages": 2
+}

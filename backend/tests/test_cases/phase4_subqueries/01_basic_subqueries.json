@@ -1,0 +1,406 @@
+[
+  {
+    "test_id": "sub-001",
+    "name": "Scalar subquery in SELECT",
+    "description": "Single value subquery in SELECT clause",
+    "difficulty": "intermediate",
+    "phase": 4,
+    "tags": ["scalar_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email, (SELECT COUNT(*) FROM orders WHERE orders.customer_id = customers.customer_id) AS order_count FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-002",
+    "name": "Subquery in WHERE clause",
+    "description": "Filter using subquery result",
+    "difficulty": "intermediate",
+    "phase": 4,
+    "tags": ["where_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE customer_id IN (SELECT customer_id FROM orders WHERE total_amount > 1000)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-003",
+    "name": "Derived table in FROM",
+    "description": "Subquery used as table source",
+    "difficulty": "intermediate",
+    "phase": 4,
+    "tags": ["derived_table", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_spent FROM (SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id) AS customer_totals",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-004",
+    "name": "EXISTS subquery",
+    "description": "EXISTS check in WHERE clause",
+    "difficulty": "intermediate",
+    "phase": 4,
+    "tags": ["exists_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-005",
+    "name": "Simple CTE (WITH clause)",
+    "description": "Common Table Expression with single CTE",
+    "difficulty": "intermediate",
+    "phase": 4,
+    "tags": ["cte", "with_clause", "subqueries"],
+    "dialect": "postgres",
+    "sql": "WITH customer_orders AS (SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id) SELECT c.customer_id, c.email, co.order_count FROM customers c INNER JOIN customer_orders co ON c.customer_id = co.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-006",
+    "name": "Multiple CTEs",
+    "description": "Multiple CTEs in single query",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["cte", "with_clause", "subqueries", "multiple_cte"],
+    "dialect": "postgres",
+    "sql": "WITH customer_totals AS (SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id), high_value_customers AS (SELECT customer_id FROM customer_totals WHERE total_spent > 5000) SELECT c.customer_id, c.email FROM customers c WHERE c.customer_id IN (SELECT customer_id FROM high_value_customers)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "sub-007",
+    "name": "Derived table with JOIN",
+    "description": "Joining to a subquery result",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["derived_table", "inner_join", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, ot.total_spent FROM customers c INNER JOIN (SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id) ot ON c.customer_id = ot.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-008",
+    "name": "Nested subqueries",
+    "description": "Subquery within subquery",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["nested_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE customer_id IN (SELECT customer_id FROM orders WHERE order_id IN (SELECT order_id FROM order_items WHERE quantity > 5))",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "quantity", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "sub-009",
+    "name": "Correlated subquery",
+    "description": "Subquery referencing outer query",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["correlated_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, (SELECT SUM(o.total_amount) FROM orders o WHERE o.customer_id = c.customer_id) AS total_spent FROM customers c",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-010",
+    "name": "Subquery with aggregation in SELECT",
+    "description": "Aggregate subquery result in main query",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["derived_table", "aggregations", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT AVG(order_count) AS avg_orders_per_customer FROM (SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id) AS customer_orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.avg_orders_per_customer",
+        "sources": [],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  }
+]

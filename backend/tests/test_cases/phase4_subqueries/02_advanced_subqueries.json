@@ -1,0 +1,318 @@
+[
+  {
+    "test_id": "sub-011",
+    "name": "CTE with multiple references",
+    "description": "CTE referenced multiple times in main query",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["cte", "with_clause", "subqueries"],
+    "dialect": "postgres",
+    "sql": "WITH order_stats AS (SELECT customer_id, COUNT(*) AS order_count, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id) SELECT os1.customer_id, os1.order_count, os1.total_spent FROM order_stats os1 WHERE os1.total_spent > (SELECT AVG(total_spent) FROM order_stats)",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "subquery"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "sub-012",
+    "name": "Recursive CTE",
+    "description": "CTE with recursive self-reference",
+    "difficulty": "expert",
+    "phase": 4,
+    "tags": ["cte", "recursive_cte", "with_clause", "subqueries"],
+    "dialect": "postgres",
+    "sql": "WITH RECURSIVE employee_hierarchy AS (SELECT employee_id, name, manager_id, 1 AS level FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.employee_id, e.name, e.manager_id, eh.level + 1 FROM employees e INNER JOIN employee_hierarchy eh ON e.manager_id = eh.employee_id) SELECT employee_id, name, level FROM employee_hierarchy",
+    "source_tables": [
+      {
+        "name": "employees",
+        "columns": [
+          {"name": "employee_id", "type": "INTEGER"},
+          {"name": "name", "type": "VARCHAR"},
+          {"name": "manager_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.employee_id",
+        "sources": ["employees.employee_id"],
+        "transformation_type": "subquery"
+      },
+      {
+        "target": "result.name",
+        "sources": ["employees.name"],
+        "transformation_type": "subquery"
+      },
+      {
+        "target": "result.level",
+        "sources": [],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 5000
+  },
+  {
+    "test_id": "sub-013",
+    "name": "Subquery in HAVING clause",
+    "description": "Filtering aggregated results with subquery",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["having_subquery", "group_by", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id HAVING SUM(total_amount) > (SELECT AVG(total_amount) FROM orders)",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-014",
+    "name": "Multiple derived tables",
+    "description": "Multiple subqueries in FROM clause",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["derived_table", "inner_join", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT oc.customer_id, oc.order_count, cs.total_spent FROM (SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id) oc INNER JOIN (SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id) cs ON oc.customer_id = cs.customer_id",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "subquery"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "sub-015",
+    "name": "Subquery with UNION",
+    "description": "UNION within subquery",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["derived_table", "union", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_type, customer_count FROM (SELECT 'new' AS customer_type, COUNT(*) AS customer_count FROM customers WHERE created_at > '2024-01-01' UNION ALL SELECT 'existing' AS customer_type, COUNT(*) AS customer_count FROM customers WHERE created_at <= '2024-01-01') AS customer_segments",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "created_at", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_type",
+        "sources": [],
+        "transformation_type": "subquery"
+      },
+      {
+        "target": "result.customer_count",
+        "sources": [],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "sub-016",
+    "name": "CTE with JOIN and aggregation",
+    "description": "Complex CTE combining multiple operations",
+    "difficulty": "advanced",
+    "phase": 4,
+    "tags": ["cte", "with_clause", "inner_join", "aggregations", "subqueries"],
+    "dialect": "postgres",
+    "sql": "WITH customer_order_details AS (SELECT c.customer_id, c.email, o.order_id, o.total_amount FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id) SELECT customer_id, email, COUNT(order_id) AS order_count, SUM(total_amount) AS total_spent FROM customer_order_details GROUP BY customer_id, email",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": ["orders.order_id"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "sub-017",
+    "name": "NOT IN subquery",
+    "description": "Negative filter using subquery",
+    "difficulty": "intermediate",
+    "phase": 4,
+    "tags": ["where_subquery", "not_in", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "sub-018",
+    "name": "Lateral join with subquery",
+    "description": "Correlated lateral subquery",
+    "difficulty": "expert",
+    "phase": 4,
+    "tags": ["lateral_join", "correlated_subquery", "subqueries"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, recent_orders.recent_order_count FROM customers c, LATERAL (SELECT COUNT(*) AS recent_order_count FROM orders o WHERE o.customer_id = c.customer_id AND o.order_date > CURRENT_DATE - INTERVAL '30 days') recent_orders",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.recent_order_count",
+        "sources": [],
+        "transformation_type": "subquery"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  }
+]
