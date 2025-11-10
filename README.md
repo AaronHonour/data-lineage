@@ -5,11 +5,12 @@ A production-grade data lineage tracking system that provides **column-level lin
 ## Features
 
 - **Column-Level Lineage**: Track how data flows from source columns to target columns through transformations
-- **Multi-Source Support**: PostgreSQL ✅, MySQL ✅, SQL Server ✅, dbt ✅, Apache Iceberg (planned), Delta Lake (planned)
+- **Multi-Source Support**: PostgreSQL ✅, MySQL ✅, SQL Server ✅, dbt ✅, Apache Iceberg ✅, Delta Lake ✅
 - **Automatic Discovery**: Metadata API integration to automatically discover tables, columns, and transformations
 - **SQL Parsing**: Intelligent SQL parsing using sqlglot to extract lineage from views, stored procedures, etc.
-- **Python Code Parsing**: Extract lineage from pandas, polars, and pyspark transformations (Alpha)
+- **Python Code Parsing**: Extract lineage from pandas ✅, polars ✅, and pyspark ✅ transformations
 - **dbt Integration**: Native support for dbt projects with manifest.json parsing and model lineage
+- **Data Lake Support**: Native connectors for Apache Iceberg and Delta Lake table formats
 - **Interactive Visualization**: React Flow-based interactive lineage graphs (planned)
 - **REST API**: Comprehensive REST API for programmatic access
 - **Impact Analysis**: Understand downstream impact of schema or data changes
@@ -267,10 +268,10 @@ This demonstrates various types of lineage:
 - [x] MySQL connector
 - [x] SQL Server connector
 - [x] dbt integration
-- [x] Python code parsing (pandas, polars, pyspark) - Alpha
+- [x] Python code parsing (pandas ✅, polars ✅, pyspark ✅)
+- [x] Apache Iceberg connector
+- [x] Delta Lake connector
 - [ ] React Flow visualization
-- [ ] Apache Iceberg connector
-- [ ] Delta Lake connector
 - [ ] Background job scheduler
 - [ ] Real-time lineage updates
 - [ ] Data quality integration
