@@ -11,8 +11,10 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    JSON,
     String,
     Text,
+    TypeDecorator,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID as PGUUID
@@ -30,19 +32,99 @@ from app.domain.entities import (
 Base = declarative_base()
 
 
+# Database-agnostic JSON type for testing compatibility
+class JSONTypeCompat(TypeDecorator):
+    """JSON type that uses JSONB for PostgreSQL and JSON for other databases."""
+
+    impl = JSON
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(JSONB())
+        else:
+            return dialect.type_descriptor(JSON())
+
+
+# Database-agnostic UUID type for testing compatibility
+class UUIDTypeCompat(TypeDecorator):
+    """UUID type that uses native UUID for PostgreSQL and String for SQLite."""
+
+    impl = String(36)
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(PGUUID(as_uuid=True))
+        else:
+            return dialect.type_descriptor(String(36))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        if dialect.name == 'postgresql':
+            return value
+        else:
+            if isinstance(value, UUID):
+                return str(value)
+            return value
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        if not isinstance(value, str):
+            return value
+        # Keep as string for SQLite compatibility
+        return value
+
+
+# Database-agnostic ARRAY type for testing compatibility
+class ArrayTypeCompat(TypeDecorator):
+    """ARRAY type that uses ARRAY for PostgreSQL and JSON for SQLite."""
+
+    impl = JSON
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(ARRAY(String(36)))
+        else:
+            return dialect.type_descriptor(JSON())
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        if dialect.name == 'postgresql':
+            return value
+        else:
+            # For SQLite, store as JSON array
+            import json
+            return json.dumps(value) if isinstance(value, list) else value
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        if dialect.name == 'postgresql':
+            return value
+        else:
+            # For SQLite, parse JSON array
+            import json
+            return json.loads(value) if isinstance(value, str) else value
+
+
 class DataSourceModel(Base):
     """SQLAlchemy model for data sources."""
 
     __tablename__ = "data_sources"
 
-    id = SQLColumn(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = SQLColumn(UUIDTypeCompat, primary_key=True, default=uuid4)
     name = SQLColumn(String(255), nullable=False, unique=True)
     type = SQLColumn(
         String(50),
         CheckConstraint("type IN ('postgres', 'mysql', 'sqlserver', 'iceberg', 'delta')"),
         nullable=False
     )
-    connection_config = SQLColumn(JSONB, nullable=False)
+    connection_config = SQLColumn(JSONTypeCompat, nullable=False)
     sync_schedule = SQLColumn(String(50), nullable=True)
     last_sync_at = SQLColumn(DateTime, nullable=True)
     status = SQLColumn(
@@ -92,8 +174,8 @@ class DatasetModel(Base):
 
     __tablename__ = "datasets"
 
-    id = SQLColumn(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    data_source_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("data_sources.id", ondelete="CASCADE"), nullable=False)
+    id = SQLColumn(UUIDTypeCompat, primary_key=True, default=uuid4)
+    data_source_id = SQLColumn(UUIDTypeCompat, ForeignKey("data_sources.id", ondelete="CASCADE"), nullable=False)
     fully_qualified_name = SQLColumn(String(500), nullable=False, unique=True)
     name = SQLColumn(String(255), nullable=False)
     schema_name = SQLColumn(String(255), nullable=True)
@@ -102,7 +184,7 @@ class DatasetModel(Base):
         CheckConstraint("type IN ('table', 'view', 'materialized_view', 'iceberg_table', 'delta_table', 'file')"),
         nullable=False
     )
-    extra_metadata = SQLColumn('metadata', JSONB, default={}, nullable=False)
+    extra_metadata = SQLColumn('metadata', JSONTypeCompat, default={}, nullable=False)
     last_synced_at = SQLColumn(DateTime, nullable=True)
     created_at = SQLColumn(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = SQLColumn(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -148,14 +230,14 @@ class ColumnModel(Base):
 
     __tablename__ = "columns"
 
-    id = SQLColumn(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    dataset_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
+    id = SQLColumn(UUIDTypeCompat, primary_key=True, default=uuid4)
+    dataset_id = SQLColumn(UUIDTypeCompat, ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
     name = SQLColumn(String(255), nullable=False)
     data_type = SQLColumn(String(100), nullable=True)
     ordinal_position = SQLColumn(Integer, nullable=True)
     is_nullable = SQLColumn(Boolean, default=True, nullable=False)
     is_primary_key = SQLColumn(Boolean, default=False, nullable=False)
-    extra_metadata = SQLColumn('metadata', JSONB, default={}, nullable=False)
+    extra_metadata = SQLColumn('metadata', JSONTypeCompat, default={}, nullable=False)
     created_at = SQLColumn(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = SQLColumn(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -203,9 +285,9 @@ class TransformationModel(Base):
 
     __tablename__ = "transformations"
 
-    id = SQLColumn(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    source_dataset_ids = SQLColumn(ARRAY(PGUUID(as_uuid=True)), nullable=False)
-    target_dataset_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
+    id = SQLColumn(UUIDTypeCompat, primary_key=True, default=uuid4)
+    source_dataset_ids = SQLColumn(ArrayTypeCompat, nullable=False)
+    target_dataset_id = SQLColumn(UUIDTypeCompat, ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
     code = SQLColumn(Text, nullable=False)
     language = SQLColumn(
         String(50),
@@ -255,10 +337,10 @@ class ColumnLineageModel(Base):
 
     __tablename__ = "column_lineage"
 
-    id = SQLColumn(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    source_column_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("columns.id", ondelete="CASCADE"), nullable=False)
-    target_column_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("columns.id", ondelete="CASCADE"), nullable=False)
-    transformation_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("transformations.id", ondelete="SET NULL"), nullable=True)
+    id = SQLColumn(UUIDTypeCompat, primary_key=True, default=uuid4)
+    source_column_id = SQLColumn(UUIDTypeCompat, ForeignKey("columns.id", ondelete="CASCADE"), nullable=False)
+    target_column_id = SQLColumn(UUIDTypeCompat, ForeignKey("columns.id", ondelete="CASCADE"), nullable=False)
+    transformation_id = SQLColumn(UUIDTypeCompat, ForeignKey("transformations.id", ondelete="SET NULL"), nullable=True)
     expression = SQLColumn(Text, nullable=True)
     confidence = SQLColumn(Float, CheckConstraint("confidence >= 0 AND confidence <= 1"), default=1.0, nullable=False)
     created_at = SQLColumn(DateTime, default=datetime.utcnow, nullable=False)
@@ -298,8 +380,8 @@ class SyncJobModel(Base):
 
     __tablename__ = "sync_jobs"
 
-    id = SQLColumn(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    data_source_id = SQLColumn(PGUUID(as_uuid=True), ForeignKey("data_sources.id", ondelete="CASCADE"), nullable=False)
+    id = SQLColumn(UUIDTypeCompat, primary_key=True, default=uuid4)
+    data_source_id = SQLColumn(UUIDTypeCompat, ForeignKey("data_sources.id", ondelete="CASCADE"), nullable=False)
     status = SQLColumn(
         String(20),
         CheckConstraint("status IN ('running', 'completed', 'failed')"),
@@ -309,5 +391,5 @@ class SyncJobModel(Base):
     started_at = SQLColumn(DateTime, default=datetime.utcnow, nullable=False)
     completed_at = SQLColumn(DateTime, nullable=True)
     error_message = SQLColumn(Text, nullable=True)
-    stats = SQLColumn(JSONB, default={}, nullable=False)
+    stats = SQLColumn(JSONTypeCompat, default={}, nullable=False)
     created_at = SQLColumn(DateTime, default=datetime.utcnow, nullable=False)

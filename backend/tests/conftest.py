@@ -22,7 +22,7 @@ from app.infrastructure.database.models import (
     DatasetModel,
     ColumnModel,
     TransformationModel,
-    LineageModel,
+    ColumnLineageModel,
 )
 
 
@@ -225,11 +225,14 @@ async def sample_columns(
 async def sample_lineage_graph(
     db_session: AsyncSession,
     sample_data_source: DataSourceModel
-) -> tuple[list[DatasetModel], list[LineageModel]]:
+) -> tuple[list[DatasetModel], list[ColumnLineageModel]]:
     """Create a sample lineage graph for testing.
 
-    Graph structure:
+    Graph structure (table-level):
     raw_events -> stg_events -> fact_orders
+
+    With columns:
+    raw_events.event_id -> stg_events.event_id -> fact_orders.order_id
     """
     from uuid import uuid4
 
@@ -267,19 +270,58 @@ async def sample_lineage_graph(
     for dataset in datasets:
         await db_session.refresh(dataset)
 
-    # Create lineage edges
-    lineage1 = LineageModel(
+    # Create columns for each dataset
+    col_raw_event_id = ColumnModel(
         id=str(uuid4()),
-        source_dataset_id=raw_events.id,
-        target_dataset_id=stg_events.id,
-        transformation_type="sql"
+        dataset_id=raw_events.id,
+        name="event_id",
+        data_type="INTEGER",
+        ordinal_position=1,
+        is_nullable=False
     )
 
-    lineage2 = LineageModel(
+    col_stg_event_id = ColumnModel(
         id=str(uuid4()),
-        source_dataset_id=stg_events.id,
-        target_dataset_id=fact_orders.id,
-        transformation_type="sql"
+        dataset_id=stg_events.id,
+        name="event_id",
+        data_type="INTEGER",
+        ordinal_position=1,
+        is_nullable=False
+    )
+
+    col_fact_order_id = ColumnModel(
+        id=str(uuid4()),
+        dataset_id=fact_orders.id,
+        name="order_id",
+        data_type="INTEGER",
+        ordinal_position=1,
+        is_nullable=False
+    )
+
+    columns = [col_raw_event_id, col_stg_event_id, col_fact_order_id]
+    for column in columns:
+        db_session.add(column)
+
+    await db_session.commit()
+
+    for column in columns:
+        await db_session.refresh(column)
+
+    # Create column lineage edges
+    lineage1 = ColumnLineageModel(
+        id=str(uuid4()),
+        source_column_id=col_raw_event_id.id,
+        target_column_id=col_stg_event_id.id,
+        expression="event_id",
+        confidence=1.0
+    )
+
+    lineage2 = ColumnLineageModel(
+        id=str(uuid4()),
+        source_column_id=col_stg_event_id.id,
+        target_column_id=col_fact_order_id.id,
+        expression="event_id",
+        confidence=1.0
     )
 
     lineage_edges = [lineage1, lineage2]
