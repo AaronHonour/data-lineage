@@ -29,10 +29,12 @@ class DatasetSchema(BaseModel):
 
 
 class LineageEdgeSchema(BaseModel):
-    """Lineage edge schema."""
-    id: UUID
-    source_column_id: UUID
-    target_column_id: UUID
+    """Lineage edge schema - supports both column-level and table-level edges."""
+    id: Optional[UUID] = None
+    source_column_id: Optional[UUID] = None
+    target_column_id: Optional[UUID] = None
+    source_dataset_id: Optional[UUID] = None
+    target_dataset_id: Optional[UUID] = None
     expression: Optional[str] = None
     confidence: float = Field(ge=0.0, le=1.0)
 

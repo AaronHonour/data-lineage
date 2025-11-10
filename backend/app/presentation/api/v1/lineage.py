@@ -18,6 +18,7 @@ from app.presentation.schemas.lineage import (
     ColumnSchema,
     LineageEdgeSchema,
 )
+from app.application.services.lineage_query_service import LineageQueryService
 
 router = APIRouter(prefix="/lineage")
 
@@ -180,36 +181,46 @@ async def get_table_lineage(
     Get table-level lineage (aggregated from column lineage).
 
     This shows which tables are related, without column-level detail.
+    Useful for high-level data flow visualization.
     """
-    # Verify dataset exists
-    result = await db.execute(
-        select(DatasetModel).where(DatasetModel.id == dataset_id)
-    )
-    root_dataset = result.scalar_one_or_none()
+    # Use LineageQueryService to get table-level lineage
+    query_service = LineageQueryService(db)
+    result = await query_service.get_table_lineage(dataset_id, direction, depth)
 
-    if not root_dataset:
+    if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Dataset {dataset_id} not found"
         )
 
-    # TODO: Implement table-level lineage traversal
-    # For now, return minimal response
+    # Convert to response schema
+    datasets = [
+        DatasetSchema(
+            id=UUID(ds['id']),
+            name=ds['name'],
+            schema_name=ds.get('schema_name'),
+            fully_qualified_name=ds['fully_qualified_name'],
+            source_type=ds.get('source_type', 'unknown'),
+            columns=[]  # Table-level view doesn't include column details
+        )
+        for ds in result['datasets']
+    ]
+
+    edges = [
+        LineageEdgeSchema(
+            id=None,  # Table edges don't have individual IDs
+            source_column_id=None,
+            target_column_id=None,
+            expression=f"{edge['column_count']} column(s)",
+            confidence=1.0,
+            source_dataset_id=UUID(edge['source_dataset_id']),
+            target_dataset_id=UUID(edge['target_dataset_id'])
+        )
+        for edge in result['edges']
+    ]
+
     return LineageGraphResponse(
-        datasets=[
-            DatasetSchema(
-                id=root_dataset.id,
-                name=root_dataset.name,
-                schema_name=root_dataset.schema_name,
-                fully_qualified_name=root_dataset.fully_qualified_name,
-                source_type=root_dataset.metadata.get('source_type', 'unknown'),
-                columns=[]
-            )
-        ],
-        edges=[],
-        metadata={
-            "root_dataset_id": str(dataset_id),
-            "direction": direction,
-            "depth": depth
-        }
+        datasets=datasets,
+        edges=edges,
+        metadata=result['metadata']
     )

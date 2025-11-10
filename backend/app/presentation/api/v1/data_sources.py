@@ -1,5 +1,5 @@
 """Data sources API endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
@@ -14,6 +14,7 @@ from app.presentation.schemas.data_source import (
 )
 from app.domain.entities.data_source import DataSource, DataSourceType, DataSourceStatus
 from app.infrastructure.connectors.factory import ConnectorFactory
+from app.application.services.lineage_sync_service import LineageSyncService
 
 router = APIRouter(prefix="/data-sources")
 
@@ -189,11 +190,19 @@ async def delete_data_source(
 )
 async def trigger_sync(
     source_id: UUID,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Trigger metadata synchronization for a data source.
-    This will discover tables, columns, and transformations.
+
+    This will:
+    - Discover tables, views, and columns from the data source
+    - Discover transformations (SQL views, dbt models, etc.)
+    - Parse transformation code to extract column-level lineage
+    - Build the global lineage graph in the database
+
+    The sync runs in the background and may take several minutes for large sources.
     """
     result = await db.execute(
         select(DataSourceModel).where(DataSourceModel.id == source_id)
@@ -206,9 +215,69 @@ async def trigger_sync(
             detail=f"Data source {source_id} not found"
         )
 
-    # TODO: Implement background job for sync
-    # For now, return accepted status
+    # Create sync service
+    sync_service = LineageSyncService(db)
+
+    # Run sync (for now run synchronously; in production use Celery/RQ)
+    try:
+        stats = await sync_service.sync_data_source(source_id)
+
+        return {
+            "message": "Sync completed successfully",
+            "source_id": str(source_id),
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Sync failed: {str(e)}"
+        )
+
+@router.get(
+    "/{source_id}/sync-jobs",
+    summary="Get sync job history"
+)
+async def get_sync_jobs(
+    source_id: UUID,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get sync job history for a data source.
+
+    Returns the most recent sync jobs with their status and statistics.
+    """
+    from app.infrastructure.database.models import SyncJobModel
+
+    result = await db.execute(
+        select(DataSourceModel).where(DataSourceModel.id == source_id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Data source {source_id} not found"
+        )
+
+    # Get sync jobs
+    result = await db.execute(
+        select(SyncJobModel)
+        .where(SyncJobModel.data_source_id == source_id)
+        .order_by(SyncJobModel.created_at.desc())
+        .limit(limit)
+    )
+    jobs = result.scalars().all()
+
     return {
-        "message": "Sync job queued",
-        "source_id": source_id
+        "source_id": str(source_id),
+        "jobs": [
+            {
+                "id": str(job.id),
+                "status": job.status,
+                "started_at": job.started_at.isoformat() if job.started_at else None,
+                "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+                "error_message": job.error_message,
+                "stats": job.stats
+            }
+            for job in jobs
+        ]
     }
