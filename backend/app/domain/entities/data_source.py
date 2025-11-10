@@ -11,6 +11,7 @@ class DataSourceType(str, Enum):
     POSTGRES = "postgres"
     MYSQL = "mysql"
     SQLSERVER = "sqlserver"
+    DBT = "dbt"
     ICEBERG = "iceberg"
     DELTA = "delta"
 

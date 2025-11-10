@@ -6,6 +6,7 @@ from .base import BaseConnector
 from .postgres_connector import PostgreSQLConnector
 from .mysql_connector import MySQLConnector
 from .sqlserver_connector import SQLServerConnector
+from .dbt_connector import DbtConnector
 
 
 class ConnectorFactory:
@@ -15,6 +16,7 @@ class ConnectorFactory:
         DataSourceType.POSTGRES.value: PostgreSQLConnector,
         DataSourceType.MYSQL.value: MySQLConnector,
         DataSourceType.SQLSERVER.value: SQLServerConnector,
+        DataSourceType.DBT.value: DbtConnector,
         # Add more connectors here as they're implemented
         # DataSourceType.ICEBERG.value: IcebergConnector,
         # DataSourceType.DELTA.value: DeltaConnector,
