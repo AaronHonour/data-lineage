@@ -1,0 +1,319 @@
+[
+  {
+    "test_id": "dml-001",
+    "name": "INSERT with VALUES",
+    "description": "Simple INSERT with literal values",
+    "difficulty": "basic",
+    "phase": 7,
+    "tags": ["insert", "dml", "values"],
+    "dialect": "postgres",
+    "sql": "INSERT INTO customers (customer_id, email, status) VALUES (1, 'test@example.com', 'active')",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-002",
+    "name": "INSERT ... SELECT",
+    "description": "INSERT using SELECT from another table",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["insert", "select", "dml"],
+    "dialect": "postgres",
+    "sql": "INSERT INTO customer_archive (customer_id, email, archived_date) SELECT customer_id, email, CURRENT_DATE FROM customers WHERE status = 'inactive'",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "customer_archive",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "archived_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000,
+    "skip": true,
+    "skip_reason": "DML: sqlglot does not extract column lineage for INSERT...SELECT statements"
+  },
+  {
+    "test_id": "dml-003",
+    "name": "INSERT ... SELECT with JOIN",
+    "description": "INSERT using SELECT with JOIN",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["insert", "select", "inner_join", "dml"],
+    "dialect": "postgres",
+    "sql": "INSERT INTO order_summary (customer_id, customer_email, total_orders, total_amount) SELECT c.customer_id, c.email, COUNT(o.order_id), SUM(o.total_amount) FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.email",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      },
+      {
+        "name": "order_summary",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "customer_email", "type": "VARCHAR"},
+          {"name": "total_orders", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "order_summary.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "order_summary.customer_email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "order_summary.total_orders",
+        "sources": ["orders.order_id"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "order_summary.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "dml-004",
+    "name": "UPDATE with literal value",
+    "description": "Simple UPDATE with literal value",
+    "difficulty": "basic",
+    "phase": 7,
+    "tags": ["update", "dml"],
+    "dialect": "postgres",
+    "sql": "UPDATE customers SET status = 'inactive' WHERE customer_id = 1",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-005",
+    "name": "UPDATE with expression",
+    "description": "UPDATE using column expressions",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["update", "dml", "expression"],
+    "dialect": "postgres",
+    "sql": "UPDATE orders SET total_amount = quantity * unit_price, updated_at = CURRENT_TIMESTAMP WHERE order_id = 100",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "quantity", "type": "INTEGER"},
+          {"name": "unit_price", "type": "DECIMAL"},
+          {"name": "total_amount", "type": "DECIMAL"},
+          {"name": "updated_at", "type": "TIMESTAMP"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "orders.total_amount",
+        "sources": ["orders.quantity", "orders.unit_price"],
+        "transformation_type": "transformation"
+      },
+      {
+        "target": "orders.updated_at",
+        "sources": [],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-006",
+    "name": "UPDATE with subquery",
+    "description": "UPDATE using value from subquery",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["update", "subqueries", "dml"],
+    "dialect": "postgres",
+    "sql": "UPDATE customers SET total_spent = (SELECT SUM(total_amount) FROM orders WHERE orders.customer_id = customers.customer_id) WHERE customer_id > 0",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_spent", "type": "DECIMAL"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "customers.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "dml-007",
+    "name": "UPDATE with JOIN",
+    "description": "UPDATE using JOIN (PostgreSQL syntax)",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["update", "inner_join", "dml"],
+    "dialect": "postgres",
+    "sql": "UPDATE customers SET status = 'vip' FROM orders WHERE customers.customer_id = orders.customer_id AND orders.total_amount > 10000",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "dml-008",
+    "name": "DELETE with WHERE",
+    "description": "Simple DELETE with WHERE clause",
+    "difficulty": "basic",
+    "phase": 7,
+    "tags": ["delete", "dml"],
+    "dialect": "postgres",
+    "sql": "DELETE FROM customers WHERE status = 'inactive' AND created_at < '2020-01-01'",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"},
+          {"name": "created_at", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-009",
+    "name": "DELETE with subquery",
+    "description": "DELETE using subquery in WHERE",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["delete", "subqueries", "dml"],
+    "dialect": "postgres",
+    "sql": "DELETE FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-010",
+    "name": "DELETE with JOIN",
+    "description": "DELETE using JOIN (PostgreSQL USING syntax)",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["delete", "inner_join", "dml"],
+    "dialect": "postgres",
+    "sql": "DELETE FROM order_items USING orders WHERE order_items.order_id = orders.order_id AND orders.status = 'cancelled'",
+    "source_tables": [
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "order_item_id", "type": "INTEGER"},
+          {"name": "order_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  }
+]

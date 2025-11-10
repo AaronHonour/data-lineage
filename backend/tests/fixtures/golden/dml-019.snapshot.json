@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "completed_date = CURRENT_DATE",
+      "sources": [],
+      "target": "result."
+    }
+  ],
+  "total_lineages": 1
+}

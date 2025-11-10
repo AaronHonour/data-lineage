@@ -28,8 +28,8 @@
     "phase": {
       "type": "integer",
       "minimum": 1,
-      "maximum": 6,
-      "description": "Development phase (1=basic, 2=joins, 3=agg, 4=subquery, 5=advanced, 6=edge)"
+      "maximum": 10,
+      "description": "Development phase (1=basic, 2=joins, 3=agg, 4=subquery, 5=window, 6=set_ops, 7=dml, 8-10=future)"
     },
     "tags": {
       "type": "array",

@@ -1,0 +1,294 @@
+[
+  {
+    "test_id": "dml-011",
+    "name": "INSERT ... SELECT with CTE",
+    "description": "INSERT using CTE in SELECT",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["insert", "cte", "with_clause", "dml"],
+    "dialect": "postgres",
+    "sql": "WITH high_value_customers AS (SELECT customer_id, SUM(total_amount) AS lifetime_value FROM orders GROUP BY customer_id HAVING SUM(total_amount) > 5000) INSERT INTO vip_customers (customer_id, lifetime_value) SELECT customer_id, lifetime_value FROM high_value_customers",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      },
+      {
+        "name": "vip_customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "lifetime_value", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "vip_customers.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "vip_customers.lifetime_value",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 5000
+  },
+  {
+    "test_id": "dml-012",
+    "name": "INSERT with multiple value rows",
+    "description": "INSERT multiple rows with VALUES",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["insert", "values", "dml", "multiple"],
+    "dialect": "postgres",
+    "sql": "INSERT INTO customers (customer_id, email, status) VALUES (1, 'user1@example.com', 'active'), (2, 'user2@example.com', 'active'), (3, 'user3@example.com', 'inactive')",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-013",
+    "name": "UPDATE with CASE expression",
+    "description": "UPDATE using CASE WHEN",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["update", "case_when", "dml"],
+    "dialect": "postgres",
+    "sql": "UPDATE customers SET status = CASE WHEN total_spent > 10000 THEN 'vip' WHEN total_spent > 5000 THEN 'premium' ELSE 'standard' END WHERE customer_id > 0",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_spent", "type": "DECIMAL"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "customers.status",
+        "sources": ["customers.total_spent"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-014",
+    "name": "UPDATE multiple columns",
+    "description": "UPDATE setting multiple columns at once",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["update", "dml", "multiple"],
+    "dialect": "postgres",
+    "sql": "UPDATE orders SET status = 'shipped', shipped_date = CURRENT_DATE, tracking_number = CONCAT('TRACK-', order_id) WHERE status = 'processing'",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"},
+          {"name": "shipped_date", "type": "DATE"},
+          {"name": "tracking_number", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "orders.shipped_date",
+        "sources": [],
+        "transformation_type": "transformation"
+      },
+      {
+        "target": "orders.tracking_number",
+        "sources": ["orders.order_id"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-015",
+    "name": "INSERT ... ON CONFLICT (UPSERT)",
+    "description": "INSERT with ON CONFLICT DO UPDATE (PostgreSQL UPSERT)",
+    "difficulty": "expert",
+    "phase": 7,
+    "tags": ["insert", "upsert", "on_conflict", "dml"],
+    "dialect": "postgres",
+    "sql": "INSERT INTO customer_stats (customer_id, order_count, last_order_date) VALUES (1, 1, CURRENT_DATE) ON CONFLICT (customer_id) DO UPDATE SET order_count = customer_stats.order_count + 1, last_order_date = EXCLUDED.last_order_date",
+    "source_tables": [
+      {
+        "name": "customer_stats",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_count", "type": "INTEGER"},
+          {"name": "last_order_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "dml-016",
+    "name": "DELETE with EXISTS subquery",
+    "description": "DELETE using EXISTS in WHERE",
+    "difficulty": "advanced",
+    "phase": 7,
+    "tags": ["delete", "subqueries", "exists", "dml"],
+    "dialect": "postgres",
+    "sql": "DELETE FROM customers WHERE NOT EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-017",
+    "name": "MERGE (UPSERT) statement",
+    "description": "MERGE statement for conditional INSERT/UPDATE",
+    "difficulty": "expert",
+    "phase": 7,
+    "tags": ["merge", "upsert", "dml"],
+    "dialect": "postgres",
+    "sql": "MERGE INTO customer_stats cs USING (SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id) o ON cs.customer_id = o.customer_id WHEN MATCHED THEN UPDATE SET order_count = o.order_count WHEN NOT MATCHED THEN INSERT (customer_id, order_count) VALUES (o.customer_id, o.order_count)",
+    "source_tables": [
+      {
+        "name": "customer_stats",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_count", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "customer_stats.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "customer_stats.order_count",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.6,
+    "max_parse_time_ms": 5000
+  },
+  {
+    "test_id": "dml-018",
+    "name": "INSERT ... RETURNING",
+    "description": "INSERT with RETURNING clause",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["insert", "returning", "dml"],
+    "dialect": "postgres",
+    "sql": "INSERT INTO orders (customer_id, total_amount, order_date) VALUES (1, 100.00, CURRENT_DATE) RETURNING order_id, customer_id, total_amount",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"},
+          {"name": "order_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-019",
+    "name": "UPDATE ... RETURNING",
+    "description": "UPDATE with RETURNING clause",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["update", "returning", "dml"],
+    "dialect": "postgres",
+    "sql": "UPDATE orders SET status = 'completed', completed_date = CURRENT_DATE WHERE order_id = 100 RETURNING order_id, status, completed_date",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "status", "type": "VARCHAR"},
+          {"name": "completed_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "orders.completed_date",
+        "sources": [],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "dml-020",
+    "name": "DELETE ... RETURNING",
+    "description": "DELETE with RETURNING clause",
+    "difficulty": "intermediate",
+    "phase": 7,
+    "tags": ["delete", "returning", "dml"],
+    "dialect": "postgres",
+    "sql": "DELETE FROM customers WHERE status = 'deleted' RETURNING customer_id, email",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"},
+          {"name": "status", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  }
+]

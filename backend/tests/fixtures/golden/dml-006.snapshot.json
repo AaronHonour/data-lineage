@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "total_spent = (SELECT SUM(total_amount) FROM orders WHERE orders.customer_id = customers.customer_id)",
+      "sources": [],
+      "target": "result."
+    }
+  ],
+  "total_lineages": 1
+}

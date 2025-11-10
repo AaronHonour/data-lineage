@@ -1,0 +1,11 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "status = CASE WHEN total_spent > 10000 THEN 'vip' WHEN total_spent > 5000 THEN 'premium' ELSE 'standard' END",
+      "sources": [],
+      "target": "result."
+    }
+  ],
+  "total_lineages": 1
+}
