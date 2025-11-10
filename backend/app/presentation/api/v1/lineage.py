@@ -132,7 +132,7 @@ async def get_column_lineage(
             name=dataset.name,
             schema_name=dataset.schema_name,
             fully_qualified_name=dataset.fully_qualified_name,
-            source_type=dataset.metadata.get('source_type', 'unknown'),
+            source_type=dataset.extra_metadata.get('source_type', 'unknown') if dataset.extra_metadata else 'unknown',
             columns=[
                 ColumnSchema(
                     id=col.id,
