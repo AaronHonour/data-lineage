@@ -1,0 +1,424 @@
+[
+  {
+    "test_id": "win-001",
+    "name": "Simple ROW_NUMBER",
+    "description": "ROW_NUMBER with ORDER BY",
+    "difficulty": "intermediate",
+    "phase": 5,
+    "tags": ["window_functions", "row_number", "order_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email, ROW_NUMBER() OVER (ORDER BY customer_id) AS row_num FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.row_num",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-002",
+    "name": "RANK window function",
+    "description": "RANK with ORDER BY",
+    "difficulty": "intermediate",
+    "phase": 5,
+    "tags": ["window_functions", "rank", "order_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, RANK() OVER (ORDER BY total_amount DESC) AS rank FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.rank",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-003",
+    "name": "DENSE_RANK window function",
+    "description": "DENSE_RANK with ORDER BY",
+    "difficulty": "intermediate",
+    "phase": 5,
+    "tags": ["window_functions", "dense_rank", "order_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, DENSE_RANK() OVER (ORDER BY total_amount DESC) AS dense_rank FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.dense_rank",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-004",
+    "name": "PARTITION BY with ROW_NUMBER",
+    "description": "ROW_NUMBER with PARTITION BY and ORDER BY",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "row_number", "partition_by", "order_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date) AS order_sequence FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_sequence",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-005",
+    "name": "LAG window function",
+    "description": "LAG to access previous row value",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "lag", "partition_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, LAG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS previous_order_amount FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.previous_order_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-006",
+    "name": "LEAD window function",
+    "description": "LEAD to access next row value",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "lead", "partition_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, LEAD(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS next_order_amount FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.next_order_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-007",
+    "name": "FIRST_VALUE window function",
+    "description": "FIRST_VALUE to get first value in partition",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "first_value", "partition_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, FIRST_VALUE(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS first_order_amount FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.first_order_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-008",
+    "name": "LAST_VALUE window function",
+    "description": "LAST_VALUE to get last value in partition",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "last_value", "partition_by"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, LAST_VALUE(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_order_amount FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.last_order_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-009",
+    "name": "SUM window function",
+    "description": "SUM as window function with running total",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "sum", "partition_by", "running_total"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, SUM(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS running_total FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.running_total",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-010",
+    "name": "AVG window function",
+    "description": "AVG as window function with moving average",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "avg", "partition_by", "moving_average"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, AVG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.moving_avg",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  }
+]

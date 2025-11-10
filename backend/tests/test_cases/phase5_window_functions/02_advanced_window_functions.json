@@ -1,0 +1,348 @@
+[
+  {
+    "test_id": "win-011",
+    "name": "Multiple window functions in single query",
+    "description": "Multiple window functions with different ordering",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "row_number", "rank", "sum", "multiple"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, ROW_NUMBER() OVER (ORDER BY total_amount DESC) AS row_num, RANK() OVER (ORDER BY total_amount DESC) AS rank, SUM(total_amount) OVER (ORDER BY total_amount DESC) AS running_sum FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.row_num",
+        "sources": [],
+        "transformation_type": "window"
+      },
+      {
+        "target": "result.rank",
+        "sources": [],
+        "transformation_type": "window"
+      },
+      {
+        "target": "result.running_sum",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "win-012",
+    "name": "Window function with JOIN",
+    "description": "Window function across joined tables",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "inner_join", "row_number"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, o.order_id, o.total_amount, ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY o.order_date) AS order_num FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_num",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "win-013",
+    "name": "NTILE window function",
+    "description": "NTILE to divide data into buckets",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "ntile", "quartiles"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, NTILE(4) OVER (ORDER BY total_amount) AS quartile FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.quartile",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-014",
+    "name": "Window function with RANGE frame",
+    "description": "Window function with RANGE BETWEEN frame specification",
+    "difficulty": "expert",
+    "phase": 5,
+    "tags": ["window_functions", "sum", "range_frame"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_date, total_amount, SUM(total_amount) OVER (ORDER BY order_date RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) AS week_total FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.week_total",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "win-015",
+    "name": "PERCENT_RANK window function",
+    "description": "PERCENT_RANK to calculate relative rank",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "percent_rank"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, PERCENT_RANK() OVER (ORDER BY total_amount) AS percentile_rank FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.percentile_rank",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-016",
+    "name": "CUME_DIST window function",
+    "description": "CUME_DIST to calculate cumulative distribution",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "cume_dist"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, CUME_DIST() OVER (ORDER BY total_amount) AS cumulative_dist FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.cumulative_dist",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "win-017",
+    "name": "Named window specification",
+    "description": "WINDOW clause to name window specifications",
+    "difficulty": "advanced",
+    "phase": 5,
+    "tags": ["window_functions", "named_window", "window_clause"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, total_amount, ROW_NUMBER() OVER w AS row_num, RANK() OVER w AS rank FROM orders WINDOW w AS (ORDER BY total_amount DESC)",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.row_num",
+        "sources": [],
+        "transformation_type": "window"
+      },
+      {
+        "target": "result.rank",
+        "sources": [],
+        "transformation_type": "window"
+      }
+    ],
+    "min_confidence": 0.7,
+    "max_parse_time_ms": 4000
+  },
+  {
+    "test_id": "win-018",
+    "name": "Window function in subquery",
+    "description": "Window function within derived table",
+    "difficulty": "expert",
+    "phase": 5,
+    "tags": ["window_functions", "subqueries", "derived_table", "row_number"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, order_id, total_amount FROM (SELECT customer_id, order_id, total_amount, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date) AS rn FROM orders) ranked WHERE rn = 1",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 4000
+  }
+]

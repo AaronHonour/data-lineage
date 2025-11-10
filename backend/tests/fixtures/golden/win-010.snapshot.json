@@ -1,0 +1,36 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "order_date",
+      "sources": [
+        "orders.order_date"
+      ],
+      "target": "result.order_date"
+    },
+    {
+      "expression": "total_amount",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_amount"
+    },
+    {
+      "expression": "AVG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date NULLS LAST ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg",
+      "sources": [
+        "orders.customer_id",
+        "orders.order_date",
+        "orders.total_amount"
+      ],
+      "target": "result.moving_avg"
+    }
+  ],
+  "total_lineages": 4
+}

@@ -1,0 +1,35 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "order_date",
+      "sources": [
+        "orders.order_date"
+      ],
+      "target": "result.order_date"
+    },
+    {
+      "expression": "total_amount",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_amount"
+    },
+    {
+      "expression": "SUM(total_amount) OVER (ORDER BY order_date NULLS LAST RANGE BETWEEN INTERVAL '7' DAYS PRECEDING AND CURRENT ROW) AS week_total",
+      "sources": [
+        "orders.order_date",
+        "orders.total_amount"
+      ],
+      "target": "result.week_total"
+    }
+  ],
+  "total_lineages": 4
+}

@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "total_amount",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_amount"
+    },
+    {
+      "expression": "PERCENT_RANK() OVER (ORDER BY total_amount NULLS LAST) AS percentile_rank",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.percentile_rank"
+    }
+  ],
+  "total_lineages": 3
+}

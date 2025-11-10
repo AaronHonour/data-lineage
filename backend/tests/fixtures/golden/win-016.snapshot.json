@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "total_amount",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_amount"
+    },
+    {
+      "expression": "CUME_DIST() OVER (ORDER BY total_amount NULLS LAST) AS cumulative_dist",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.cumulative_dist"
+    }
+  ],
+  "total_lineages": 3
+}

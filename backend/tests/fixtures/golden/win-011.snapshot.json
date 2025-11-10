@@ -1,0 +1,41 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "total_amount",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_amount"
+    },
+    {
+      "expression": "ROW_NUMBER() OVER (ORDER BY total_amount DESC NULLS FIRST) AS row_num",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.row_num"
+    },
+    {
+      "expression": "RANK() OVER (ORDER BY total_amount DESC NULLS FIRST) AS rank",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.rank"
+    },
+    {
+      "expression": "SUM(total_amount) OVER (ORDER BY total_amount DESC NULLS FIRST) AS running_sum",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.running_sum"
+    }
+  ],
+  "total_lineages": 5
+}

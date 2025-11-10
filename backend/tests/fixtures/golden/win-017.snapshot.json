@@ -1,0 +1,30 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "total_amount",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_amount"
+    },
+    {
+      "expression": "ROW_NUMBER() OVER w AS row_num",
+      "sources": [],
+      "target": "result.row_num"
+    },
+    {
+      "expression": "RANK() OVER w AS rank",
+      "sources": [],
+      "target": "result.rank"
+    }
+  ],
+  "total_lineages": 4
+}
