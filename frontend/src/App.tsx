@@ -17,6 +17,7 @@ import { Login } from '@pages/Login/Login';
 import { Dashboard } from '@pages/Dashboard/Dashboard';
 import { DataSources } from '@pages/DataSources/DataSources';
 import { Lineage } from '@pages/Lineage/Lineage';
+import { LineageViewer } from '@pages/Lineage/LineageViewer';
 import { Datasets } from '@pages/Datasets/Datasets';
 import { theme } from './theme';
 
@@ -51,7 +52,7 @@ const App: React.FC = () => {
               <Route path="sources" element={<DataSources />} />
               <Route path="datasets" element={<Datasets />} />
               <Route path="lineage" element={<Lineage />} />
-              <Route path="lineage/:datasetId" element={<Lineage />} />
+              <Route path="lineage/:datasetId" element={<LineageViewer />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

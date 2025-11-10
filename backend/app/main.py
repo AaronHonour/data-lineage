@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.infrastructure.database.connection import init_db, close_db
-from app.presentation.api.v1 import lineage, data_sources
+from app.presentation.api.v1 import lineage, data_sources, auth
 
 
 @asynccontextmanager
@@ -36,6 +36,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(data_sources.router, prefix=settings.api_v1_prefix, tags=["data-sources"])
 app.include_router(lineage.router, prefix=settings.api_v1_prefix, tags=["lineage"])
 
