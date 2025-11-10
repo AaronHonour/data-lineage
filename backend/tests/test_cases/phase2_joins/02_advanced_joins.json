@@ -1,0 +1,247 @@
+[
+  {
+    "test_id": "join-011",
+    "name": "Four table JOIN",
+    "description": "Complex JOIN across four tables",
+    "difficulty": "advanced",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "multi_table"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, o.order_id, oi.product_id, p.product_name FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id INNER JOIN order_items oi ON o.order_id = oi.order_id INNER JOIN products p ON oi.product_id = p.product_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "product_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "products",
+        "columns": [
+          {"name": "product_id", "type": "INTEGER"},
+          {"name": "product_name", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.product_id",
+        "sources": ["order_items.product_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.product_name",
+        "sources": ["products.product_name"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "join-012",
+    "name": "Mixed JOIN types",
+    "description": "Combining INNER and LEFT JOINs",
+    "difficulty": "advanced",
+    "phase": 2,
+    "tags": ["inner_join", "left_join", "joins", "mixed"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, o.order_id, p.payment_id FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id LEFT JOIN payments p ON o.order_id = p.order_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "payments",
+        "columns": [
+          {"name": "payment_id", "type": "INTEGER"},
+          {"name": "order_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.payment_id",
+        "sources": ["payments.payment_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "join-013",
+    "name": "JOIN without table aliases",
+    "description": "JOIN using full table names without aliases",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "no_alias"],
+    "dialect": "postgres",
+    "sql": "SELECT customers.customer_id, orders.order_id FROM customers INNER JOIN orders ON customers.customer_id = orders.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-014",
+    "name": "USING clause JOIN",
+    "description": "JOIN with USING clause for same-named columns",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "using_clause"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email, order_id FROM customers INNER JOIN orders USING (customer_id)",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id", "orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.8,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-015",
+    "name": "NATURAL JOIN",
+    "description": "NATURAL JOIN automatically matching columns - known sqlglot limitation",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["natural_join", "joins"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, email, order_id FROM customers NATURAL JOIN orders",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": [],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.6,
+    "max_parse_time_ms": 2000,
+    "skip": true,
+    "skip_reason": "NATURAL JOIN: sqlglot cannot determine implicit join column sources"
+  }
+]

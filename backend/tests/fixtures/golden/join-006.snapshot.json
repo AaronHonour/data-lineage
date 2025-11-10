@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "e1.employee_id",
+      "sources": [
+        "employees.employee_id"
+      ],
+      "target": "result.employee_id"
+    },
+    {
+      "expression": "e1.name AS employee_name",
+      "sources": [
+        "employees.name"
+      ],
+      "target": "result.employee_name"
+    },
+    {
+      "expression": "e2.name AS manager_name",
+      "sources": [
+        "employees.name"
+      ],
+      "target": "result.manager_name"
+    }
+  ],
+  "total_lineages": 3
+}

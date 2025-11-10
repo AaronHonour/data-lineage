@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "p.product_id",
+      "sources": [
+        "products.product_id"
+      ],
+      "target": "result.product_id"
+    },
+    {
+      "expression": "p.product_name",
+      "sources": [
+        "products.product_name"
+      ],
+      "target": "result.product_name"
+    },
+    {
+      "expression": "s.store_id",
+      "sources": [
+        "stores.store_id"
+      ],
+      "target": "result.store_id"
+    }
+  ],
+  "total_lineages": 3
+}

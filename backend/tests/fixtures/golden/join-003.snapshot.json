@@ -1,0 +1,27 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "c.customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "o.order_id",
+      "sources": [
+        "orders.order_id"
+      ],
+      "target": "result.order_id"
+    },
+    {
+      "expression": "o.order_date",
+      "sources": [
+        "orders.order_date"
+      ],
+      "target": "result.order_date"
+    }
+  ],
+  "total_lineages": 3
+}

@@ -1,0 +1,34 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "c.customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "o.order_id",
+      "sources": [
+        "orders.order_id"
+      ],
+      "target": "result.order_id"
+    },
+    {
+      "expression": "oi.product_id",
+      "sources": [
+        "order_items.product_id"
+      ],
+      "target": "result.product_id"
+    },
+    {
+      "expression": "oi.quantity",
+      "sources": [
+        "order_items.quantity"
+      ],
+      "target": "result.quantity"
+    }
+  ],
+  "total_lineages": 4
+}

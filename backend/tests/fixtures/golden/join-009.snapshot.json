@@ -1,0 +1,35 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "c.customer_id",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "c.first_name || ' ' || c.last_name AS full_name",
+      "sources": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "target": "result.full_name"
+    },
+    {
+      "expression": "o.order_id",
+      "sources": [
+        "orders.order_id"
+      ],
+      "target": "result.order_id"
+    },
+    {
+      "expression": "o.total_amount * 1.1 AS amount_with_tax",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.amount_with_tax"
+    }
+  ],
+  "total_lineages": 4
+}

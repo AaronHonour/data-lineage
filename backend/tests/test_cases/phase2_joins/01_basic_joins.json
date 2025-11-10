@@ -1,0 +1,466 @@
+[
+  {
+    "test_id": "join-001",
+    "name": "Simple INNER JOIN",
+    "description": "Basic INNER JOIN between two tables",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "two_tables"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, o.order_id, o.total_amount FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER", "primary_key": true},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER", "primary_key": true},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-002",
+    "name": "LEFT JOIN",
+    "description": "LEFT OUTER JOIN preserving all rows from left table",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["left_join", "joins", "outer_join"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.first_name, o.order_id FROM customers c LEFT JOIN orders o ON c.customer_id = o.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "first_name", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.first_name",
+        "sources": ["customers.first_name"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-003",
+    "name": "RIGHT JOIN",
+    "description": "RIGHT OUTER JOIN preserving all rows from right table",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["right_join", "joins", "outer_join"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, o.order_id, o.order_date FROM customers c RIGHT JOIN orders o ON c.customer_id = o.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "order_date", "type": "DATE"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_date",
+        "sources": ["orders.order_date"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-004",
+    "name": "FULL OUTER JOIN",
+    "description": "FULL OUTER JOIN preserving all rows from both tables",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["full_join", "joins", "outer_join"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, o.order_id FROM customers c FULL OUTER JOIN orders o ON c.customer_id = o.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-005",
+    "name": "CROSS JOIN",
+    "description": "Cartesian product of two tables",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["cross_join", "joins", "cartesian"],
+    "dialect": "postgres",
+    "sql": "SELECT p.product_id, p.product_name, s.store_id FROM products p CROSS JOIN stores s",
+    "source_tables": [
+      {
+        "name": "products",
+        "columns": [
+          {"name": "product_id", "type": "INTEGER"},
+          {"name": "product_name", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "stores",
+        "columns": [
+          {"name": "store_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.product_id",
+        "sources": ["products.product_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.product_name",
+        "sources": ["products.product_name"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.store_id",
+        "sources": ["stores.store_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-006",
+    "name": "Self JOIN",
+    "description": "Table joined with itself to find relationships",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["self_join", "joins"],
+    "dialect": "postgres",
+    "sql": "SELECT e1.employee_id, e1.name AS employee_name, e2.name AS manager_name FROM employees e1 LEFT JOIN employees e2 ON e1.manager_id = e2.employee_id",
+    "source_tables": [
+      {
+        "name": "employees",
+        "columns": [
+          {"name": "employee_id", "type": "INTEGER"},
+          {"name": "name", "type": "VARCHAR"},
+          {"name": "manager_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.employee_id",
+        "sources": ["employees.employee_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.employee_name",
+        "sources": ["employees.name"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.manager_name",
+        "sources": ["employees.name"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-007",
+    "name": "Three table JOIN",
+    "description": "JOIN across three tables",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "multi_table"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, o.order_id, oi.product_id, oi.quantity FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id INNER JOIN order_items oi ON o.order_id = oi.order_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "product_id", "type": "INTEGER"},
+          {"name": "quantity", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.product_id",
+        "sources": ["order_items.product_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.quantity",
+        "sources": ["order_items.quantity"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-008",
+    "name": "JOIN with WHERE clause",
+    "description": "JOIN with additional filtering in WHERE",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "where_clause"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, o.order_id, o.total_amount FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id WHERE o.total_amount > 100",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_amount",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-009",
+    "name": "JOIN with column transformations",
+    "description": "JOIN with transformations on joined columns",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "transformation"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.first_name || ' ' || c.last_name AS full_name, o.order_id, o.total_amount * 1.1 AS amount_with_tax FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "first_name", "type": "VARCHAR"},
+          {"name": "last_name", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.full_name",
+        "sources": ["customers.first_name", "customers.last_name"],
+        "transformation_type": "transformation"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.amount_with_tax",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "transformation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "join-010",
+    "name": "JOIN with complex ON condition",
+    "description": "JOIN with multiple conditions in ON clause",
+    "difficulty": "intermediate",
+    "phase": 2,
+    "tags": ["inner_join", "joins", "complex_condition"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, o.order_id FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id AND c.region = o.region",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "region", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "region", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_id",
+        "sources": ["orders.order_id"],
+        "transformation_type": "projection"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  }
+]
