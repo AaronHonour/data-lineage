@@ -7,6 +7,7 @@ from uuid import UUID
 from typing import Optional
 
 from app.infrastructure.database.connection import get_db
+from app.presentation.api.v1.auth import get_current_user
 from app.infrastructure.database.models import (
     ColumnModel,
     ColumnLineageModel,

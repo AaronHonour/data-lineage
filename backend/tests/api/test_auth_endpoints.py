@@ -119,7 +119,8 @@ class TestAuthEndpoints:
             }
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        # OAuth2PasswordRequestForm validates empty strings result in 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
     async def test_token_validation_success(self, client: AsyncClient, auth_token: str):

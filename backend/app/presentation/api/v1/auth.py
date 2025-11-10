@@ -18,15 +18,24 @@ from pydantic import BaseModel
 DEMO_USERS = {
     "admin": {
         "username": "admin",
-        "password": "admin",  # In production: hash this!
+        "password": "admin123",  # In production: hash this!
         "email": "admin@lineage.local",
         "full_name": "Admin User",
+        "role": "admin",
+    },
+    "viewer": {
+        "username": "viewer",
+        "password": "viewer123",
+        "email": "viewer@lineage.local",
+        "full_name": "Viewer User",
+        "role": "viewer",
     },
     "demo": {
         "username": "demo",
-        "password": "demo",
+        "password": "demo123",
         "email": "demo@lineage.local",
         "full_name": "Demo User",
+        "role": "viewer",
     },
 }
 
@@ -95,7 +104,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     Login endpoint.
 
     Returns JWT token for valid credentials.
-    Demo credentials: admin/admin or demo/demo
+    Demo credentials: admin/admin123, viewer/viewer123, or demo/demo123
     """
     user = DEMO_USERS.get(form_data.username)
 
@@ -119,6 +128,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             "username": user["username"],
             "email": user.get("email"),
             "full_name": user.get("full_name"),
+            "role": user.get("role", "viewer"),
         },
     }
 

@@ -15,6 +15,7 @@ from app.presentation.schemas.data_source import (
 from app.domain.entities.data_source import DataSource, DataSourceType, DataSourceStatus
 from app.infrastructure.connectors.factory import ConnectorFactory
 from app.application.services.lineage_sync_service import LineageSyncService
+from app.presentation.api.v1.auth import get_current_user
 
 router = APIRouter(prefix="/data-sources")
 
@@ -27,7 +28,8 @@ router = APIRouter(prefix="/data-sources")
 )
 async def create_data_source(
     data: DataSourceCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Register a new data source for lineage tracking.
@@ -88,7 +90,8 @@ async def create_data_source(
     summary="List all data sources"
 )
 async def list_data_sources(
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Get list of all registered data sources."""
     result = await db.execute(select(DataSourceModel).order_by(DataSourceModel.created_at.desc()))
@@ -103,7 +106,8 @@ async def list_data_sources(
 )
 async def get_data_source(
     source_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Get details of a specific data source."""
     result = await db.execute(
@@ -128,7 +132,8 @@ async def get_data_source(
 async def update_data_source(
     source_id: UUID,
     data: DataSourceUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Update data source configuration."""
     result = await db.execute(
@@ -165,7 +170,8 @@ async def update_data_source(
 )
 async def delete_data_source(
     source_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Delete a data source and all associated metadata."""
     result = await db.execute(
@@ -191,7 +197,8 @@ async def delete_data_source(
 async def trigger_sync(
     source_id: UUID,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Trigger metadata synchronization for a data source.
@@ -240,7 +247,8 @@ async def trigger_sync(
 async def get_sync_jobs(
     source_id: UUID,
     limit: int = 10,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get sync job history for a data source.
