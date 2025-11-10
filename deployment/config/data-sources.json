@@ -1,0 +1,66 @@
+{
+  "data_sources": [
+    {
+      "name": "PostgreSQL Source - E-commerce",
+      "source_type": "postgres",
+      "connection_config": {
+        "host": "postgres-source",
+        "port": 5432,
+        "database": "ecommerce",
+        "username": "source_user",
+        "password": "source_pass",
+        "schemas": ["raw"]
+      },
+      "description": "Raw operational data from e-commerce system (customers, orders, products)"
+    },
+    {
+      "name": "MySQL Source - Auxiliary Systems",
+      "source_type": "mysql",
+      "connection_config": {
+        "host": "mysql-source",
+        "port": 3306,
+        "database": "auxiliary",
+        "username": "mysql_user",
+        "password": "mysql_pass"
+      },
+      "description": "Auxiliary data from inventory and shipping systems"
+    },
+    {
+      "name": "dbt Project - Analytics",
+      "source_type": "dbt",
+      "connection_config": {
+        "project_dir": "/dbt-project",
+        "profiles_dir": "/dbt-project",
+        "target": "dev"
+      },
+      "description": "dbt transformation models (staging and marts layers)"
+    },
+    {
+      "name": "Python Jobs - Customer Analytics",
+      "source_type": "python",
+      "connection_config": {
+        "script_path": "/python-jobs/customer_lifetime_value.py",
+        "python_version": "3.11"
+      },
+      "description": "Customer LTV analysis using pandas"
+    },
+    {
+      "name": "Python Jobs - Daily Metrics",
+      "source_type": "python",
+      "connection_config": {
+        "script_path": "/python-jobs/daily_order_metrics.py",
+        "python_version": "3.11"
+      },
+      "description": "Daily order metrics aggregation using polars"
+    },
+    {
+      "name": "Delta Lake - Analytics Output",
+      "source_type": "delta",
+      "connection_config": {
+        "warehouse_path": "/delta-lake",
+        "catalog_type": "hadoop"
+      },
+      "description": "Delta Lake tables containing final analytics outputs"
+    }
+  ]
+}

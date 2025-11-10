@@ -1,0 +1,12 @@
+lineage_sample:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres-source
+      port: 5432
+      user: source_user
+      password: source_pass
+      dbname: ecommerce
+      schema: analytics
+      threads: 4

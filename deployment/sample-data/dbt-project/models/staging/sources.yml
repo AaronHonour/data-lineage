@@ -1,0 +1,53 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw operational data from e-commerce system
+    database: ecommerce
+    schema: raw
+    tables:
+      - name: customers
+        description: Customer master data
+        columns:
+          - name: customer_id
+            description: Primary key
+          - name: email
+            description: Customer email address
+          - name: first_name
+            description: Customer first name
+          - name: last_name
+            description: Customer last name
+
+      - name: orders
+        description: Order transactions
+        columns:
+          - name: order_id
+            description: Primary key
+          - name: customer_id
+            description: Foreign key to customers
+          - name: order_date
+            description: Date when order was placed
+          - name: total_amount
+            description: Total order value
+
+      - name: products
+        description: Product catalog
+        columns:
+          - name: product_id
+            description: Primary key
+          - name: product_name
+            description: Product name
+          - name: category
+            description: Product category
+          - name: price
+            description: Product price
+
+      - name: order_items
+        description: Line items for each order
+        columns:
+          - name: order_item_id
+            description: Primary key
+          - name: order_id
+            description: Foreign key to orders
+          - name: product_id
+            description: Foreign key to products
