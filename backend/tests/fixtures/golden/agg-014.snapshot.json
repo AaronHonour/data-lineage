@@ -1,0 +1,32 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "orders.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "COUNT(*) AS order_count",
+      "sources": [],
+      "target": "result.order_count"
+    },
+    {
+      "expression": "SUM(total_amount) AS total_spent",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_spent"
+    },
+    {
+      "expression": "AVG(total_amount) AS avg_order",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.avg_order"
+    }
+  ],
+  "total_lineages": 4
+}

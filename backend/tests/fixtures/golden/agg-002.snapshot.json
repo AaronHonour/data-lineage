@@ -1,0 +1,13 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "COUNT(customer_id) AS customer_count",
+      "sources": [
+        "customers.customer_id"
+      ],
+      "target": "result.customer_count"
+    }
+  ],
+  "total_lineages": 1
+}

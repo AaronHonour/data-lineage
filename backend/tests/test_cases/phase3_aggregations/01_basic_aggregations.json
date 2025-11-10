@@ -1,0 +1,319 @@
+[
+  {
+    "test_id": "agg-001",
+    "name": "Simple COUNT",
+    "description": "Basic COUNT(*) aggregation",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["count", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT COUNT(*) AS total_customers FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.total_customers",
+        "sources": [],
+        "transformation_type": "aggregation",
+        "expression": "COUNT(*) AS total_customers"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-002",
+    "name": "COUNT specific column",
+    "description": "COUNT on a specific column",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["count", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT COUNT(customer_id) AS customer_count FROM customers",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_count",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-003",
+    "name": "SUM aggregation",
+    "description": "SUM of numeric column",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["sum", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT SUM(total_amount) AS total_revenue FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.total_revenue",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-004",
+    "name": "AVG aggregation",
+    "description": "AVG of numeric column",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["avg", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT AVG(total_amount) AS avg_order_value FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.avg_order_value",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-005",
+    "name": "MIN aggregation",
+    "description": "MIN of numeric column",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["min", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT MIN(total_amount) AS min_order FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.min_order",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-006",
+    "name": "MAX aggregation",
+    "description": "MAX of numeric column",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["max", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT MAX(total_amount) AS max_order FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.max_order",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-007",
+    "name": "Multiple aggregations",
+    "description": "Multiple aggregate functions in single query",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["sum", "count", "avg", "min", "max", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT COUNT(*) AS order_count, SUM(total_amount) AS total_revenue, AVG(total_amount) AS avg_order, MIN(total_amount) AS min_order, MAX(total_amount) AS max_order FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.total_revenue",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.avg_order",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.min_order",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.max_order",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 0.9,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-008",
+    "name": "GROUP BY single column",
+    "description": "GROUP BY with aggregation",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["group_by", "count", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-009",
+    "name": "GROUP BY with SUM",
+    "description": "GROUP BY with SUM aggregation",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["group_by", "sum", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-010",
+    "name": "GROUP BY multiple columns",
+    "description": "GROUP BY with multiple grouping columns",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["group_by", "count", "aggregations", "multi_column"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, product_id, COUNT(*) AS purchase_count FROM order_items GROUP BY customer_id, product_id",
+    "source_tables": [
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "product_id", "type": "INTEGER"},
+          {"name": "quantity", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["order_items.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.product_id",
+        "sources": ["order_items.product_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.purchase_count",
+        "sources": [],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  }
+]

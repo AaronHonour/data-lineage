@@ -1,0 +1,25 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "customer_id",
+      "sources": [
+        "order_items.customer_id"
+      ],
+      "target": "result.customer_id"
+    },
+    {
+      "expression": "product_id",
+      "sources": [
+        "order_items.product_id"
+      ],
+      "target": "result.product_id"
+    },
+    {
+      "expression": "COUNT(*) AS purchase_count",
+      "sources": [],
+      "target": "result.purchase_count"
+    }
+  ],
+  "total_lineages": 3
+}

@@ -1,0 +1,13 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "MIN(total_amount) AS min_order",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.min_order"
+    }
+  ],
+  "total_lineages": 1
+}

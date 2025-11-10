@@ -1,0 +1,39 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "COUNT(*) AS order_count",
+      "sources": [],
+      "target": "result.order_count"
+    },
+    {
+      "expression": "SUM(total_amount) AS total_revenue",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_revenue"
+    },
+    {
+      "expression": "AVG(total_amount) AS avg_order",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.avg_order"
+    },
+    {
+      "expression": "MIN(total_amount) AS min_order",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.min_order"
+    },
+    {
+      "expression": "MAX(total_amount) AS max_order",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.max_order"
+    }
+  ],
+  "total_lineages": 5
+}

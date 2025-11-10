@@ -1,0 +1,13 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "SUM(total_amount) AS total_revenue",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.total_revenue"
+    }
+  ],
+  "total_lineages": 1
+}

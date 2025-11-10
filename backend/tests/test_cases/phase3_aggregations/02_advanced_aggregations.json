@@ -1,0 +1,302 @@
+[
+  {
+    "test_id": "agg-011",
+    "name": "HAVING clause",
+    "description": "GROUP BY with HAVING filter on aggregate",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["group_by", "having", "sum", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id HAVING SUM(total_amount) > 1000",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-012",
+    "name": "COUNT DISTINCT",
+    "description": "COUNT with DISTINCT",
+    "difficulty": "intermediate",
+    "phase": 3,
+    "tags": ["count", "distinct", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT COUNT(DISTINCT customer_id) AS unique_customers FROM orders",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.unique_customers",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-013",
+    "name": "Aggregation with JOIN",
+    "description": "Aggregate function with JOIN",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["group_by", "sum", "inner_join", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, SUM(o.total_amount) AS total_spent FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.email",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  },
+  {
+    "test_id": "agg-014",
+    "name": "Multiple aggregations per group",
+    "description": "Multiple aggregate functions with GROUP BY",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["group_by", "count", "sum", "avg", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, COUNT(*) AS order_count, SUM(total_amount) AS total_spent, AVG(total_amount) AS avg_order FROM orders GROUP BY customer_id",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.avg_order",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-015",
+    "name": "Aggregation with WHERE and HAVING",
+    "description": "Combining WHERE (pre-aggregation) and HAVING (post-aggregation) filters",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["group_by", "where_clause", "having", "count", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, COUNT(*) AS order_count FROM orders WHERE total_amount > 50 GROUP BY customer_id HAVING COUNT(*) > 3",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": [],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-016",
+    "name": "Aggregation on calculated column",
+    "description": "Aggregate function on expression",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["sum", "aggregations", "expression"],
+    "dialect": "postgres",
+    "sql": "SELECT SUM(quantity * unit_price) AS total_revenue FROM order_items",
+    "source_tables": [
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "quantity", "type": "INTEGER"},
+          {"name": "unit_price", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.total_revenue",
+        "sources": ["order_items.quantity", "order_items.unit_price"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-017",
+    "name": "GROUP BY with ORDER BY aggregate",
+    "description": "Ordering results by aggregate value",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["group_by", "sum", "order_by", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY customer_id ORDER BY total_spent DESC",
+    "source_tables": [
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "total_amount", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["orders.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["orders.total_amount"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 2000
+  },
+  {
+    "test_id": "agg-018",
+    "name": "Three-table JOIN with aggregation",
+    "description": "Complex aggregation across multiple joined tables",
+    "difficulty": "advanced",
+    "phase": 3,
+    "tags": ["group_by", "sum", "count", "inner_join", "multi_table", "aggregations"],
+    "dialect": "postgres",
+    "sql": "SELECT c.customer_id, c.email, COUNT(DISTINCT o.order_id) AS order_count, SUM(oi.quantity * oi.unit_price) AS total_spent FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id INNER JOIN order_items oi ON o.order_id = oi.order_id GROUP BY c.customer_id, c.email",
+    "source_tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "INTEGER"},
+          {"name": "email", "type": "VARCHAR"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "customer_id", "type": "INTEGER"}
+        ]
+      },
+      {
+        "name": "order_items",
+        "columns": [
+          {"name": "order_id", "type": "INTEGER"},
+          {"name": "quantity", "type": "INTEGER"},
+          {"name": "unit_price", "type": "DECIMAL"}
+        ]
+      }
+    ],
+    "expected_lineage": [
+      {
+        "target": "result.customer_id",
+        "sources": ["customers.customer_id"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.email",
+        "sources": ["customers.email"],
+        "transformation_type": "projection"
+      },
+      {
+        "target": "result.order_count",
+        "sources": ["orders.order_id"],
+        "transformation_type": "aggregation"
+      },
+      {
+        "target": "result.total_spent",
+        "sources": ["order_items.quantity", "order_items.unit_price"],
+        "transformation_type": "aggregation"
+      }
+    ],
+    "min_confidence": 1.0,
+    "max_parse_time_ms": 3000
+  }
+]

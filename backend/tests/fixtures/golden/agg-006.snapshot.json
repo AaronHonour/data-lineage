@@ -1,0 +1,13 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "MAX(total_amount) AS max_order",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.max_order"
+    }
+  ],
+  "total_lineages": 1
+}

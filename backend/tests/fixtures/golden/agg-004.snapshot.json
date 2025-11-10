@@ -1,0 +1,13 @@
+{
+  "confidence_score": 1.0,
+  "lineages": [
+    {
+      "expression": "AVG(total_amount) AS avg_order_value",
+      "sources": [
+        "orders.total_amount"
+      ],
+      "target": "result.avg_order_value"
+    }
+  ],
+  "total_lineages": 1
+}
