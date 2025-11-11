@@ -14,6 +14,6 @@ describe('App', () => {
 
   it('shows login page when not authenticated', () => {
     render(<App />);
-    expect(screen.getByText(/Sign In/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Sign In/i })).toBeInTheDocument();
   });
 });

@@ -85,12 +85,19 @@ export const truncate = (text: string, maxLength: number): string => {
  * Get initials from a name
  */
 export const getInitials = (name: string): string => {
-  return name
-    .split(' ')
+  const parts = name.split(' ').filter(part => part.length > 0);
+
+  // If single name, take first 2 letters
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+
+  // For multiple names, take first letter of first 2 words
+  return parts
+    .slice(0, 2)
     .map((part) => part[0])
     .join('')
-    .toUpperCase()
-    .substring(0, 2);
+    .toUpperCase();
 };
 
 /**
