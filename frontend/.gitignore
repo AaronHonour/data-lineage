@@ -25,6 +25,7 @@ dist-ssr
 
 # Testing
 coverage
+coverage-results.json
 .nyc_output
 
 # Environment
